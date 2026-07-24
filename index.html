@@ -248,6 +248,23 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 .totbar{display:flex;align-items:center;gap:18px;margin-top:16px;padding:14px 18px;border:1px solid var(--line);background:var(--surface)}
 .totbar .tk-lbl{font-family:var(--mo);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 .totbar .tk-g{font-family:var(--mo);font-weight:700;font-size:26px;color:var(--ok-ink)}
+.hist-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.hist-list{max-height:360px;overflow-y:auto}
+.hist-row{display:grid;grid-template-columns:24px auto 1fr auto 62px 32px;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-bottom:1px solid var(--line);transition:background .12s}
+.hist-row:last-child{border-bottom:none}
+.hist-row:hover{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+.hist-row.sel{background:var(--accent-tint)}
+.hist-desc{font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-q{font-family:var(--mo);font-size:12px;color:var(--mut);text-align:right;white-space:nowrap}
+.hist-t{font-family:var(--mo);font-size:12.5px;color:var(--ok-ink);text-align:right}
+.chk{width:20px;height:20px;border:1px solid var(--line2);background:transparent;display:grid;place-items:center;color:var(--on-solid);padding:0;flex:none}
+.chk.on{background:var(--accent);border-color:var(--accent)}
+.hist-empty{margin-top:26px;text-align:center;color:var(--mut);border:1px dashed var(--line);padding:22px;font-size:12.5px}
+.chart-card{padding:16px}
+.chart-card h4{font-family:var(--hd);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.02em;margin:0 0 2px}
+.chart-card .ck{font-family:var(--mo);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:12px}
+.chart-box{position:relative;height:200px}
+.chart-empty{height:200px;display:grid;place-items:center;color:var(--dim);font-family:var(--mo);font-size:11px;text-align:center}
 
 /* ═══════════════════════ EMPTY / WELCOME / MODAL ═══════════════════════ */
 .empty{text-align:center;color:var(--mut);padding:44px 20px;border:1px dashed var(--line);font-size:13px}
@@ -304,6 +321,7 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/motion@10.18.0/dist/motion.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script>
 (function(){
@@ -971,11 +989,38 @@ function CraneTab({onSave,onTakeoff}){
   </div>;
 }
 
+/* ═══════════ CHARTS (Chart.js, theme-aware, single-hue = magnitude) ═══════════ */
+function ChartCanvas({labels,values,cvar,money,theme}){
+  const ref=useRef(null); const inst=useRef(null);
+  useEffect(()=>{
+    if(!window.Chart||!ref.current) return;
+    if(window.Chart.registerables&&!window.__creg){ try{window.Chart.register(...window.Chart.registerables);}catch(e){} window.__creg=1; }
+    const cs=getComputedStyle(document.documentElement), g=(v)=>cs.getPropertyValue(v).trim();
+    const ink=g('--ink'),mut=g('--mut'),line=g('--line'),surf=g('--surface'),acc=g(cvar||'--accent');
+    const fmt=(v)=> money?('$'+num(v,0)):num(v,0);
+    if(inst.current) inst.current.destroy();
+    inst.current=new window.Chart(ref.current.getContext('2d'),{
+      type:'bar',
+      data:{labels,datasets:[{data:values,backgroundColor:acc,hoverBackgroundColor:acc,borderRadius:4,borderSkipped:false,maxBarThickness:22}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:16}},animation:{duration:450,easing:'easeOutQuart'},
+        plugins:{legend:{display:false},tooltip:{backgroundColor:surf,borderColor:line,borderWidth:1,titleColor:ink,bodyColor:ink,displayColors:false,padding:9,titleFont:{family:'JetBrains Mono',size:10},bodyFont:{family:'JetBrains Mono',size:12,weight:'700'},callbacks:{label:(c)=>' '+fmt(c.parsed.x)}}},
+        scales:{x:{grid:{color:line,drawTicks:false},border:{display:false},ticks:{color:mut,font:{family:'JetBrains Mono',size:10},maxTicksLimit:5,callback:(v)=>fmt(v)}},
+                y:{grid:{display:false},border:{display:false},ticks:{color:ink,font:{family:'Barlow',size:12}}}}}
+    });
+    return ()=>{ if(inst.current){inst.current.destroy();inst.current=null;} };
+  },[labels.join('|'),values.join('|'),cvar,money,theme]);
+  return <canvas ref={ref}/>;
+}
+const TYPE_LABEL={concrete:'Concrete',formwork:'Formwork',reshore:'Reshore',pump:'Pump',rebar:'Rebar',crane:'Crane',thermal:'Thermal',rigging:'Rigging'};
+
 /* ═══════════ DASHBOARD ═══════════ */
-function Dashboard({project,go}){
+function Dashboard({project,go,theme}){
   const runs=project.runs?Object.values(project.runs):[]; const items=project.takeoff&&project.takeoff.items?Object.values(project.takeoff.items):[];
   const est=items.reduce((s,it)=>s+(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),0);
   const byType={}; runs.forEach(r=>{byType[r.type]=(byType[r.type]||0)+1;});
+  const budgetByCat={}; items.forEach(it=>{const t=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0); if(t>0) budgetByCat[it.category]=(budgetByCat[it.category]||0)+t;});
+  const bEntries=Object.entries(budgetByCat).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const rEntries=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
   const tiles=[{k:'concrete',n:'Concrete volume',i:'box',h:'CY · waste · trucks'},{k:'formwork',n:'Form pressure',i:'gauge',h:'psf · ACI 347'},{k:'reshore',n:'Reshore stack',i:'layers',h:'psf · lvl · f\'c'},{k:'pump',n:'Pour & pump',i:'gauge',h:'bar · cy/hr'},{k:'rebar',n:'Rebar & crane',i:'grid',h:'lap · wt · outrigger'},{k:'thermal',n:'Mass thermal',i:'thermo',h:'°F · ΔT · peak'},{k:'rigging',n:'Rigging loads',i:'hook',h:'sling · angle · lb'}];
   const gref=useStagger();
   const scope=SCOPES[project.meta.scope]||SCOPES.tower;
@@ -984,6 +1029,17 @@ function Dashboard({project,go}){
     <div className="g2" style={{marginBottom:18}}>
       <div data-st><Frame className="stat"><div className="sk">Saved runs</div><div className="sv">{runs.length}</div></Frame></div>
       <div data-st><Frame className="stat"><div className="sk">Estimate budget</div><div className="sv">${num(est,0)}</div><div className="ss">{items.length} lines</div></Frame></div>
+    </div>
+    <p className="kick">Insights</p>
+    <div className="g2" style={{marginBottom:18}}>
+      <div data-st><Frame className="chart-card"><h4>Budget by category</h4><div className="ck">$ per estimate category</div>
+        {bEntries.length? <div className="chart-box"><ChartCanvas money theme={theme} labels={bEntries.map(e=>e[0])} values={bEntries.map(e=>Math.round(e[1]))}/></div>
+          : <div className="chart-empty">Add priced lines to the estimate<br/>to see the budget split</div>}
+      </Frame></div>
+      <div data-st><Frame className="chart-card"><h4>Runs by calculator</h4><div className="ck">saved calc runs by type</div>
+        {rEntries.length? <div className="chart-box"><ChartCanvas cvar="--wc" theme={theme} labels={rEntries.map(e=>TYPE_LABEL[e[0]]||e[0])} values={rEntries.map(e=>e[1])}/></div>
+          : <div className="chart-empty">Save some calc runs<br/>to see your activity</div>}
+      </Frame></div>
     </div>
     <p className="kick">Calculators</p>
     <div className="g2">{tiles.map(t=><button key={t.k} data-st onClick={()=>go(t.k)}><Frame className="tile"><Icon n={t.i} s={22}/><div className="tt">{t.n}{byType[t.k]?<span className="vp clear" style={{marginLeft:8,fontSize:9}}>{byType[t.k]}</span>:null}</div><div className="th">{t.h}</div></Frame></button>)}</div>
@@ -1015,7 +1071,7 @@ function Takeoff({project,setItems,toast,rates,saveRates}){
   const map=()=>({...(project.takeoff&&project.takeoff.items||{})});
   const upd=(id,patch)=>{const m=map();m[id]={...m[id],...patch};setItems(m);};
   const del=(id)=>{const m=map();delete m[id];setItems(m);};
-  const add=(cat)=>{const id=uid('t');const m=map();m[id]={id,category:cat||'Other',desc:'',qty:0,unit:'EA',rate:rateFor(rates,cat||'Other','EA')};setItems(m);};
+  const add=(cat)=>{const id=uid('t');const m=map();m[id]={id,category:cat||'Other',desc:'',qty:0,unit:'EA',rate:rateFor(rates,cat||'Other','EA'),ts:Date.now()};setItems(m);};
   const scope=SCOPES[project.meta.scope]||SCOPES.tower;
   const grouped={}; items.forEach(it=>{(grouped[it.category]=grouped[it.category]||[]).push(it);});
   const cats=scope.cats.concat(Object.keys(grouped).filter(c=>scope.cats.indexOf(c)<0));
@@ -1081,6 +1137,40 @@ function RateBook({rates,save,onClose,toast}){
       <span className="f-unit">$/{rw.unit}</span></label>)}</div>
     <div className="dact"><button className="b sec" style={{flex:1}} onClick={onClose}>Cancel</button><button className="b ok" style={{flex:1}} onClick={()=>{save(r);onClose();toast&&toast('Rates saved');}}><Icon n="check" s={16}/>Save rates</button></div>
   </div></div>;
+}
+
+/* ═══════════ TAKEOFF HISTORY (bottom of each calculator) ═══════════ */
+function TakeoffHistory({project,setItems,go}){
+  const [sel,setSel]=useState({});
+  const items=(project.takeoff&&project.takeoff.items)?Object.values(project.takeoff.items):[];
+  const sorted=items.slice().sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const existing=new Set(items.map(i=>i.id));
+  const selIds=Object.keys(sel).filter(k=>sel[k]&&existing.has(k));
+  const total=items.reduce((s,it)=>s+(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),0);
+  const map=()=>({...(project.takeoff&&project.takeoff.items||{})});
+  const del=(ids)=>{const m=map();ids.forEach(id=>delete m[id]);setItems(m);setSel({});};
+  const toggle=(id)=>setSel(s=>({...s,[id]:!s[id]}));
+  if(items.length===0) return <div className="hist-empty">Items you <b>Add to takeoff</b> land here as a running project history — nothing yet.</div>;
+  return <div style={{marginTop:28}}>
+    <div className="hist-hd">
+      <span className="kick" style={{margin:0}}>Added to estimate</span>
+      <span className="vp clear" style={{fontSize:10}}>{items.length} lines · ${num(total,0)}</span>
+      <span style={{flex:1}}/>
+      {selIds.length>0 && <button className="b sec" style={{minHeight:38,borderColor:'var(--bad)',color:'var(--bad-ink)'}} onClick={()=>del(selIds)}><Icon n="x" s={14}/>Delete {selIds.length}</button>}
+      <button className="b ghost" style={{minHeight:38}} onClick={()=>go('takeoff')}>Open estimate<Icon n="arrowRight" s={14}/></button>
+    </div>
+    <Frame className="tk"><div className="hist-list">
+      {sorted.map(it=>{const t=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);const on=!!sel[it.id];
+        return <div key={it.id} className={'hist-row'+(on?' sel':'')}>
+          <button className={'chk'+(on?' on':'')} onClick={()=>toggle(it.id)} title="select">{on?<Icon n="check" s={12}/>:null}</button>
+          <span className="vp clear" style={{fontSize:9}}>{it.category}</span>
+          <span className="hist-desc">{it.desc||'—'}</span>
+          <span className="hist-q">{num(it.qty,2)} {it.unit}</span>
+          <span className="hist-t">{t?('$'+num(t,0)):'—'}</span>
+          <button className="tk-x" onClick={()=>del([it.id])} title="delete">×</button>
+        </div>;})}
+    </div></Frame>
+  </div>;
 }
 
 /* ═══════════ ALFRED ═══════════ */
@@ -1159,7 +1249,7 @@ function App(){
     writeProject(id,proj); setActiveId(id); localStorage.setItem('okt_active',id); setModal(false); setTab('dash'); toast('Project created & synced'); }
   function selectProject(id){ setActiveId(id); localStorage.setItem('okt_active',id); setTab('dash'); }
   const saveRun=(type,label,inputs,outputs)=>{ if(!active) return; const id=uid('r'); const runs={...(active.runs||{}),[id]:{id,type,label,inputs,date:todayISO()}}; writeProject(activeId,{...active,runs}); toast('Run saved to '+active.meta.name); };
-  const addTakeoff=(items)=>{ if(!active) return; const m={...((active.takeoff&&active.takeoff.items)||{})}; items.forEach(it=>{const id=uid('t');m[id]={id,...it,rate:rateFor(rates,it.category,it.unit)};}); writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); toast(items.length+' item(s) added to estimate'); };
+  const addTakeoff=(items)=>{ if(!active) return; const m={...((active.takeoff&&active.takeoff.items)||{})}; let ts=Date.now(); items.forEach(it=>{const id=uid('t');m[id]={id,...it,rate:rateFor(rates,it.category,it.unit),ts:ts++};}); writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); toast(items.length+' item(s) added to estimate'); };
   const setTakeoffItems=(m)=>{ if(!active) return; writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); };
 
   const NAV=[{g:'PROJECT'},{k:'dash',n:'Dashboard',i:'grid'},{k:'takeoff',n:'Estimate',i:'file',badge:active&&active.takeoff&&active.takeoff.items?Object.keys(active.takeoff.items).length:0},
@@ -1193,7 +1283,7 @@ function App(){
         <p className="kick">On this device</p>
         <div style={{display:'flex',flexDirection:'column',gap:10}}>{projects.map(p=><button key={p.id} onClick={()=>selectProject(p.id)}><Frame className="proj-card"><div><div className="pn">{p.meta.name}</div><div className="pm">JOB {p.meta.jobNumber||'—'} · {(SCOPES[p.meta.scope]||SCOPES.tower).name} · {p.meta.location||'—'}</div></div><Icon n="chevron" s={18} c="var(--mut)"/></Frame></button>)}</div>
       </div>}
-      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.3 — YAP LESS · POUR MORE</div>
+      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.4 — YAP LESS · POUR MORE</div>
     </div></div>
     :<div className="body">
       <div className={'nav'+(navOpen?' open':'')} onClick={()=>setNavOpen(false)}>
@@ -1201,7 +1291,7 @@ function App(){
       </div>
       <div className="main">
         <div className="head"><h1>{TITLES[tab][0]}</h1><div className="meta">{active.meta.name}{active.meta.jobNumber?' · JOB '+active.meta.jobNumber:''}{TITLES[tab][1]?' · '+TITLES[tab][1]:''} — {TITLES[tab][2]}</div></div>
-        {tab==='dash'&&<Dashboard project={active} go={setTab}/>}
+        {tab==='dash'&&<Dashboard project={active} go={setTab} theme={theme}/>}
         {tab==='takeoff'&&<Takeoff project={active} setItems={setTakeoffItems} toast={toast} rates={rates} saveRates={saveRates}/>}
         {tab==='concrete'&&<ConcreteCalc onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='reshore'&&<Reshore onSave={saveRun} onTakeoff={addTakeoff}/>}
@@ -1210,6 +1300,7 @@ function App(){
         {tab==='rebar'&&<RebarCrane onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='thermal'&&<Thermal onSave={saveRun}/>}
         {tab==='rigging'&&<Rigging onSave={saveRun}/>}
+        {['concrete','formwork','reshore','pump','rebar'].indexOf(tab)>=0 && <TakeoffHistory project={active} setItems={setTakeoffItems} go={setTab}/>}
       </div>
     </div>}
 
