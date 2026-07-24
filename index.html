@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a1017">
+<title>OnKlooth Takeoff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════ TOKENS ═══════════════════════ */
+:root, :root[data-theme="dark"]{
+  --bg:#0a1017; --surface:#111b28; --line:#22334a; --ink:#e8eef6; --mut:#8fa3ba;
+  --accent:#2f80ed; --accent-hover:#4d94f0; --accent-active:#6aa5f3; --accent-tint:#132741;
+  --ok:#4fc341; --ok-tint:#0f2a14; --ok-ink:#84e276;
+  --bad:#f87171; --bad-tint:#331419; --bad-ink:#f89b9b;
+  --warn:#fbbf24; --warn-tint:#2f2510; --warn-ink:#fbd35e;
+  --on-solid:#0a1017;
+  --shadow-md:0 3px 10px rgba(0,0,0,.16); --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+}
+:root[data-theme="light"]{
+  --bg:#f2f4f6; --surface:#ffffff; --line:#d3dce6; --ink:#16212d; --mut:#5c6c80;
+  --accent:#1e66c8; --accent-hover:#1857ab; --accent-active:#14407e; --accent-tint:#e7f0fb;
+  --ok:#2e8f24; --ok-tint:#e4f3e0; --ok-ink:#1f6b18;
+  --bad:#c43d3d; --bad-tint:#fae7e7; --bad-ink:#a02c2c;
+  --warn:#996a00; --warn-tint:#fbf2d6; --warn-ink:#7a5500;
+  --on-solid:#ffffff;
+  --shadow-lg:0 12px 32px rgba(20,30,45,.22);
+}
+:root{
+  --hd:'Barlow Condensed',system-ui,sans-serif;
+  --bd:'Barlow',system-ui,sans-serif;
+  --mo:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--bd);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+#root{min-height:100%}
+button{cursor:pointer;font-family:inherit;color:inherit}
+input,select,textarea{font-family:inherit}
+::selection{background:color-mix(in srgb,var(--accent) 30%,transparent)}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing:-.01em;margin:0}
+.mono{font-family:var(--mo)}
+
+/* ═══════════════════════ BLUEPRINT FRAME ═══════════════════════ */
+.frame{position:relative;border:1px solid var(--line);border-radius:0;background:var(--surface)}
+.cn{position:absolute;width:11px;height:11px;color:color-mix(in srgb,var(--ink) 55%,transparent);pointer-events:none}
+.cn::before,.cn::after{content:"";position:absolute;background:currentColor}
+.cn::before{left:5px;top:0;width:1px;height:100%}
+.cn::after{top:5px;left:0;width:100%;height:1px}
+.cn.tl{top:-6px;left:-6px}.cn.tr{top:-6px;right:-6px}.cn.bl{bottom:-6px;left:-6px}.cn.br{bottom:-6px;right:-6px}
+.grid-bg{background-image:
+  linear-gradient(var(--line) 1px,transparent 1px),
+  linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;background-position:center;opacity:1}
+
+/* ═══════════════════════ WORDMARK ═══════════════════════ */
+.mark{position:relative;display:inline-grid;place-items:center;border:1.5px solid var(--accent);color:var(--accent);
+  font-family:var(--hd);font-weight:600;line-height:1;flex:none}
+.mark::after{content:"";position:absolute;right:-2px;bottom:-2px;width:6px;height:6px;background:var(--ok)}
+.mark.s34{width:34px;height:34px;font-size:15px}
+.mark.s48{width:48px;height:48px;font-size:20px}
+.mark.s56{width:56px;height:56px;font-size:24px}
+.lockup{display:flex;flex-direction:column;gap:1px;line-height:1}
+.lockup .lk1{font-family:var(--hd);font-weight:600;font-size:16px;letter-spacing:.02em}
+.lockup .lk2{font-family:var(--mo);font-size:9px;letter-spacing:.28em;color:var(--mut)}
+
+/* ═══════════════════════ BUTTONS ═══════════════════════ */
+.b{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:var(--hd);font-weight:600;
+  font-size:14px;text-transform:uppercase;letter-spacing:.05em;border:1px solid var(--line);background:transparent;
+  color:var(--ink);border-radius:0;padding:0 16px;min-height:44px;transition:background .12s,border-color .12s}
+.b svg{display:block}
+.b.pri{background:var(--accent);border-color:var(--accent);color:var(--on-solid)}
+.b.pri:hover{background:var(--accent-hover)}
+.b.pri:active{background:var(--accent-active)}
+.b.ok{background:var(--ok);border-color:var(--ok);color:var(--on-solid)}
+.b.ok:hover{filter:brightness(1.06)}
+.b.sec:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.b.ghost{border-color:transparent;color:var(--accent);min-height:44px}
+.b.ghost:hover{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.b.big{min-height:56px;font-size:16px}
+.b.mid{min-height:52px}
+.b.block{width:100%}
+.b:disabled{opacity:.45;cursor:not-allowed}
+.b.icon{width:44px;min-height:44px;padding:0}
+
+/* ═══════════════════════ INPUT + UNIT ═══════════════════════ */
+.f{display:flex;align-items:stretch;min-height:54px;border:1px solid var(--line);background:var(--surface);transition:border-color .12s,box-shadow .12s}
+.f:focus-within{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.f-main{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:6px 11px}
+.f-lbl{font-family:var(--mo);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);transition:color .12s}
+.f:focus-within .f-lbl{color:var(--accent)}
+.f-val{width:100%;background:none;border:none;color:var(--ink);font-family:var(--mo);font-size:17px;padding:2px 0;caret-color:var(--accent)}
+.f-val:focus{outline:none}
+.f-unit{display:flex;align-items:center;padding:0 12px;border-left:1px solid var(--line);font-family:var(--mo);font-size:11px;color:var(--mut);flex:none}
+.f-sel{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);min-height:54px;padding:0 12px;font-family:var(--bd);font-size:14px;border-radius:0}
+.field-lbl{display:block;font-family:var(--mo);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+
+/* ═══════════════════════ SEGMENTED ═══════════════════════ */
+.seg{display:flex;border:1px solid var(--line);width:100%}
+.seg button{flex:1;min-height:48px;border:none;border-left:1px solid var(--line);background:transparent;color:var(--mut);
+  font-family:var(--hd);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.03em;padding:0 6px}
+.seg button:first-child{border-left:none}
+.seg button.on{background:var(--accent);color:var(--on-solid)}
+.seg button:not(.on):hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.seg.mono button{font-family:var(--mo);font-weight:500;font-size:13px;text-transform:none;letter-spacing:0}
+
+/* ═══════════════════════ LAYOUT ═══════════════════════ */
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;padding:10px 18px;
+  background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .sp{flex:1}
+.body{flex:1;display:flex}
+.nav{width:216px;flex:0 0 216px;border-right:1px solid var(--line);padding:16px 12px;position:sticky;top:57px;height:calc(100vh - 57px);overflow-y:auto}
+.nav .grp{font-family:var(--mo);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin:16px 8px 8px}
+.nav a{display:flex;align-items:center;gap:12px;padding:0 12px;min-height:48px;color:var(--mut);font-family:var(--hd);font-weight:600;
+  font-size:15px;text-transform:uppercase;letter-spacing:.02em;border:1px solid transparent;margin-bottom:2px}
+.nav a.act{background:var(--accent-tint);border-color:var(--line);color:var(--ink)}
+.nav a.act svg{color:var(--accent)}
+.nav a:not(.act):hover{color:var(--ink)}
+.nav a svg{color:var(--mut);flex:none}
+.nav a .bdg{margin-left:auto;font-family:var(--mo);font-size:10px;color:var(--mut);border:1px solid var(--line);padding:1px 7px}
+.main{flex:1;min-width:0;padding:24px 28px 96px;max-width:1180px}
+.menu-btn{display:none}
+@media(max-width:880px){
+  .nav{position:fixed;left:0;top:57px;z-index:35;background:var(--bg);transform:translateX(-100%);transition:transform .18s}
+  .nav.open{transform:none}
+  .main{padding:18px 15px 96px}
+  .menu-btn{display:inline-flex}
+}
+.head{margin-bottom:22px}
+.head h1{font-family:var(--hd);font-weight:600;font-size:26px;text-transform:uppercase;letter-spacing:.01em}
+.head .meta{font-family:var(--mo);font-size:11px;letter-spacing:.06em;color:var(--mut);margin-top:5px;text-transform:uppercase}
+.kick{font-family:var(--mo);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin:0 0 12px}
+.kick.acc{color:var(--accent)}
+
+/* ═══════════════════════ CARDS / GRID ═══════════════════════ */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:820px){.split,.g2,.g3{grid-template-columns:1fr}}
+.card{padding:18px}
+.card + .card{margin-top:14px}
+.card h3{font-family:var(--hd);font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:.01em;display:flex;align-items:center;gap:9px}
+.card .ch{font-family:var(--mo);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:3px 0 15px}
+.stat{padding:13px 15px}
+.stat .sk{font-family:var(--mo);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.stat .sv{font-family:var(--mo);font-weight:500;font-size:28px;color:var(--ink);margin-top:5px}
+.stat .ss{font-family:var(--mo);font-size:12px;color:var(--ok-ink);margin-top:2px}
+
+/* ═══════════════════════ RESULT CARD ═══════════════════════ */
+.result{padding:20px;box-shadow:var(--shadow-md)}
+.r-kick{font-family:var(--mo);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.r-hero{display:flex;align-items:baseline;gap:9px;margin:8px 0 4px}
+.r-n{font-family:var(--mo);font-weight:700;font-size:58px;line-height:.95;color:var(--accent);letter-spacing:-.02em}
+.r-n.ok{color:var(--ok-ink)} .r-n.bad{color:var(--bad)}
+.r-u{font-family:var(--mo);font-size:16px;color:var(--mut)}
+.r-rows{margin-top:12px;border-top:1px solid var(--line)}
+.rr{display:flex;justify-content:space-between;align-items:center;min-height:34px;border-bottom:1px solid var(--line);gap:10px}
+.rr .k{font-size:12.5px;color:var(--mut)}
+.rr .v{font-family:var(--mo);font-size:13px;color:var(--ink);text-align:right}
+.rr .v small{color:var(--mut);font-size:11px}
+.r-act{display:flex;gap:10px;margin-top:16px}
+.r-act .b{flex:1;min-height:52px}
+.r-act .b.ok{flex:1.3}
+
+/* ═══════════════════════ VERDICT ═══════════════════════ */
+.vp{display:inline-flex;align-items:center;font-family:var(--mo);font-size:10.5px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;padding:4px 10px;border:1px solid}
+.vp.good{background:var(--ok-tint);border-color:var(--ok);color:var(--ok-ink)}
+.vp.bad{background:var(--bad-tint);border-color:var(--bad);color:var(--bad-ink)}
+.vp.check{background:var(--warn-tint);border-color:var(--warn);color:var(--warn-ink)}
+.vp.clear{background:transparent;border-color:var(--line);color:var(--mut)}
+.vt{width:100%;border-collapse:collapse;font-family:var(--mo)}
+.vt th{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);text-align:right;padding:8px 6px;border-bottom:1px solid var(--line);font-weight:500}
+.vt th:first-child{text-align:left}
+.vt td{font-size:12.5px;padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;color:var(--ink)}
+.vt td:first-child{text-align:left;color:var(--mut)}
+.vt tr:last-child td{border-bottom:none}
+.callout{display:flex;gap:11px;align-items:flex-start;margin-top:14px;padding:12px 14px;border:1px solid;border-radius:0}
+.callout.ok{border-color:var(--ok);background:var(--ok-tint)}
+.callout.bad{border-color:var(--bad);background:var(--bad-tint)}
+.callout .ct{font-family:var(--hd);font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:.01em}
+.callout.ok .ct{color:var(--ok-ink)} .callout.bad .ct{color:var(--bad-ink)}
+.callout .cb{font-size:12.5px;color:var(--mut);margin-top:2px}
+.callout svg{flex:none;margin-top:1px}
+.callout.ok svg{color:var(--ok)} .callout.bad svg{color:var(--bad)}
+.note{font-size:12.5px;color:var(--mut);border:1px solid var(--line);padding:11px 13px;margin-top:14px}
+.note b{color:var(--accent)}
+
+/* ═══════════════════════ SYNC CHIP ═══════════════════════ */
+.chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);padding:6px 11px;
+  font-family:var(--mo);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.chip .cd{width:7px;height:7px;flex:none}
+.chip.synced .cd{background:var(--ok)} .chip.synced{color:var(--ok-ink)}
+.chip.local .cd{background:var(--warn)} .chip.local{color:var(--warn-ink)}
+.chip.offline{border-color:var(--bad);color:var(--bad-ink)} .chip.offline .cd{background:transparent;border:1.5px solid var(--bad)}
+.projsel{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:transparent;min-height:44px;padding:0 12px;
+  font-family:var(--hd);font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);max-width:220px}
+.projsel svg{color:var(--mut);flex:none}
+.projsel select{position:absolute;opacity:0;pointer-events:none}
+
+/* ═══════════════════════ CALC TILES ═══════════════════════ */
+.tile{text-align:left;padding:16px;min-height:96px;display:flex;flex-direction:column;gap:9px;background:var(--surface)}
+.tile:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.tile svg{color:var(--accent)}
+.tile .tt{font-family:var(--hd);font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:.01em;line-height:1.05}
+.tile .th{font-family:var(--mo);font-size:10px;letter-spacing:.06em;color:var(--mut);margin-top:auto}
+.rlist{border:1px solid var(--line)}
+.rlist .ri{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 13px;border-bottom:1px solid var(--line)}
+.rlist .ri:last-child{border-bottom:none}
+.rlist .ri .rn{font-size:13px;color:var(--ink)}
+.rlist .ri .rv{margin-left:auto;font-family:var(--mo);font-size:12px;color:var(--ok-ink)}
+.rlist .ri .rt{font-family:var(--mo);font-size:11px;color:var(--mut);min-width:78px;text-align:right}
+
+/* ═══════════════════════ TAKEOFF ═══════════════════════ */
+.tk-tools{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.tk-tools .sp{flex:1}
+.tk{border:1px solid var(--line)}
+.tk-hd{display:grid;grid-template-columns:1fr 62px 44px 74px 84px 36px;gap:0;background:var(--surface);border-bottom:1px solid var(--line)}
+.tk-hd span{font-family:var(--mo);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:9px 8px;text-align:right}
+.tk-hd span:first-child{text-align:left}
+.tk-cat{background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-bottom:1px solid var(--line);
+  display:flex;align-items:center;padding:8px 12px;gap:8px}
+.tk-cat .cl{font-family:var(--hd);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--accent)}
+.tk-cat .cs{margin-left:auto;font-family:var(--mo);font-size:11px;color:var(--mut)}
+.tk-row{display:grid;grid-template-columns:1fr 62px 44px 74px 84px 36px;align-items:center;min-height:46px;border-bottom:1px solid var(--line)}
+.tk-row:last-child{border-bottom:none}
+.tk-cell{padding:0 8px}
+.tk-in{width:100%;background:transparent;border:1px solid transparent;color:var(--ink);font-family:var(--bd);font-size:13px;padding:6px 6px}
+.tk-in.num{font-family:var(--mo);text-align:right}
+.tk-in.qty{border-bottom:1px dashed var(--ok);border-radius:0}
+.tk-in.rate{border-bottom:1px dashed color-mix(in srgb,var(--ink) 25%,transparent)}
+.tk-in:focus{outline:none;border:1.5px solid var(--accent);background:var(--accent-tint)}
+.tk-tot{font-family:var(--mo);font-size:12.5px;text-align:right;color:var(--ok-ink);padding:0 8px}
+.tk-x{background:transparent;border:none;color:var(--mut);font-size:15px;width:100%;height:100%}
+.tk-x:hover{color:var(--bad)}
+.totbar{display:flex;align-items:center;gap:18px;margin-top:16px;padding:14px 18px;border:1px solid var(--line);background:var(--surface)}
+.totbar .tk-lbl{font-family:var(--mo);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.totbar .tk-g{font-family:var(--mo);font-weight:700;font-size:26px;color:var(--ok-ink)}
+
+/* ═══════════════════════ EMPTY / WELCOME / MODAL ═══════════════════════ */
+.empty{text-align:center;color:var(--mut);padding:44px 20px;border:1px dashed var(--line);font-size:13px}
+.welcome-wrap{max-width:600px;margin:44px auto;padding:0 18px}
+.hero-h{font-family:var(--hd);font-weight:600;font-size:42px;line-height:1.02;text-transform:none;letter-spacing:-.01em;margin:12px 0 10px}
+.hero-sub{color:var(--mut);font-size:15px;margin:0 0 22px;max-width:440px}
+.proj-card{display:flex;align-items:center;gap:12px;padding:15px;min-height:64px;background:var(--surface);text-align:left;width:100%}
+.proj-card:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.proj-card .pn{font-family:var(--hd);font-weight:600;font-size:18px;text-transform:uppercase;letter-spacing:.01em}
+.proj-card .pm{font-family:var(--mo);font-size:10px;letter-spacing:.06em;color:var(--mut);margin-top:2px;text-transform:uppercase}
+.proj-card .pt{margin-left:auto;font-family:var(--mo);font-size:13px;color:var(--ok-ink)}
+.ov{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:18px;
+  background:color-mix(in srgb,#04080d 62%,transparent)}
+.dialog{width:min(460px,100%);padding:22px;box-shadow:var(--shadow-lg);background:var(--surface)}
+.dialog .dk{font-family:var(--mo);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.dialog h3{font-family:var(--hd);font-weight:600;font-size:22px;text-transform:uppercase;margin:4px 0 18px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.dact{display:flex;gap:10px;margin-top:20px}
+
+/* ═══════════════════════ ALFRED ═══════════════════════ */
+.fab{position:fixed;right:20px;bottom:84px;z-index:45;width:56px;height:56px;border:1px solid var(--accent);
+  background:var(--accent);color:var(--on-solid);display:grid;place-items:center;box-shadow:var(--shadow-lg)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:55;max-width:520px;margin:0 auto;height:min(70vh,560px);
+  background:var(--surface);border-top:2px solid var(--accent);box-shadow:var(--shadow-lg);display:flex;flex-direction:column}
+.sheet-hd{display:flex;align-items:center;gap:9px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.sheet-hd .sh1{font-family:var(--hd);font-weight:600;font-size:15px;text-transform:uppercase}
+.sheet-hd .sh2{font-family:var(--mo);font-size:9.5px;letter-spacing:.1em;color:var(--mut)}
+.sheet-hd svg{color:var(--accent)}
+.sheet-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;font-size:13px;line-height:1.5;padding:9px 12px;background:var(--bg);border:1px solid var(--line)}
+.msg.u{align-self:flex-end}
+.msg.a{align-self:flex-start;border:none;border-left:2px solid var(--accent);white-space:pre-wrap}
+.sheet-in{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.sheet-in input{flex:1;min-height:48px;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:0 12px;font-size:13px}
+
+.toast{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);z-index:80;background:var(--surface);
+  border:1px solid var(--ok);color:var(--ink);padding:11px 18px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:9px}
+.toast svg{color:var(--ok)}
+.footer{font-family:var(--mo);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);text-align:center;padding:20px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/motion@10.18.0/dist/motion.min.js"></script>
+
+<script>
+(function(){
+  var NS='onklooth-takeoff', DBURL='https://gen-lang-client-0119642855-default-rtdb.firebaseio.com';
+  try{
+    if(window.firebase && firebase.initializeApp){
+      firebase.initializeApp({databaseURL:DBURL}); var db=firebase.database();
+      window.fb={ online:true,
+        listen:function(p,cb){var r=db.ref(NS+'/'+p);var h=r.on('value',function(s){cb(s.val());});return function(){r.off('value',h);};},
+        set:function(p,v){return db.ref(NS+'/'+p).set(v);},
+        rootGet:function(p){return db.ref(p).get().then(function(s){return s.val();});},
+        connState:function(cb){db.ref('.info/connected').on('value',function(s){cb(!!s.val());});} };
+    } else window.fb=null;
+  }catch(e){ console.warn('local-only',e); window.fb=null; }
+})();
+window.addEventListener('error',function(e){var r=document.getElementById('root');
+  if(r&&!r.hasChildNodes()){r.innerHTML='<pre style="color:#f88;padding:24px;font:12px/1.5 monospace;white-space:pre-wrap">OnKlooth Takeoff error:\n'+(e.message||e.error||'')+'\n'+(e.filename||'')+':'+(e.lineno||'')+'</pre>';}});
+</script>
+
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useRef,useMemo,useCallback} = React;
+const MO = window.Motion || null;
+
+/* ═══════════ ENGINEERING DATA (embedded from the Drive Excel calculators) ═══════════ */
+const BAR={'#3':{db:0.375,A:0.11,w:0.376},'#4':{db:0.5,A:0.20,w:0.668},'#5':{db:0.625,A:0.31,w:1.043},'#6':{db:0.75,A:0.44,w:1.502},'#7':{db:0.875,A:0.60,w:2.044},'#8':{db:1.0,A:0.79,w:2.670},'#9':{db:1.128,A:1.00,w:3.400},'#10':{db:1.27,A:1.27,w:4.303},'#11':{db:1.41,A:1.56,w:5.313}};
+const BARS=['#3','#4','#5','#6','#7','#8','#9','#10','#11'];
+const FCS=[3000,4000,5000,6000,8000];
+const LAP={
+ 1:{3000:{'#3':[21,16],'#4':[23,18],'#5':[28,22],'#6':[34,26],'#7':[49,38],'#8':[56,43],'#9':[63,49],'#10':[71,55],'#11':[79,61]},4000:{'#3':[21,16],'#4':[21,16],'#5':[25,19],'#6':[29,23],'#7':[43,33],'#8':[49,37],'#9':[55,42],'#10':[62,47],'#11':[68,53]},5000:{'#3':[21,16],'#4':[21,16],'#5':[22,17],'#6':[26,20],'#7':[38,29],'#8':[44,34],'#9':[49,38],'#10':[55,43],'#11':[61,47]},6000:{'#3':[21,16],'#4':[21,16],'#5':[21,16],'#6':[24,19],'#7':[35,27],'#8':[40,31],'#9':[45,34],'#10':[50,39],'#11':[56,43]},8000:{'#3':[21,16],'#4':[21,16],'#5':[21,16],'#6':[22,17],'#7':[31,24],'#8':[36,28],'#9':[39,30],'#10':[44,34],'#11':[50,38]}},
+ 2:{3000:{'#3':[28,22],'#4':[38,29],'#5':[47,36],'#6':[56,43],'#7':[81,63],'#8':[93,72],'#9':[105,81],'#10':[118,91],'#11':[131,101]},4000:{'#3':[25,19],'#4':[33,25],'#5':[41,31],'#6':[49,37],'#7':[71,54],'#8':[81,62],'#9':[91,70],'#10':[102,79],'#11':[114,87]},5000:{'#3':[22,17],'#4':[29,23],'#5':[36,28],'#6':[44,34],'#7':[63,49],'#8':[72,56],'#9':[81,63],'#10':[92,71],'#11':[102,78]},6000:{'#3':[21,16],'#4':[27,21],'#5':[33,26],'#6':[40,31],'#7':[58,45],'#8':[66,51],'#9':[74,57],'#10':[84,64],'#11':[93,71]},8000:{'#3':[21,16],'#4':[24,19],'#5':[29,23],'#6':[36,28],'#7':[51,39],'#8':[58,45],'#9':[65,50],'#10':[73,56],'#11':[82,63]}},
+ 3:{3000:{'#5':[70,54],'#6':[84,64],'#7':[122,94],'#8':[139,107],'#9':[157,121],'#10':[177,136],'#11':[196,151]},4000:{'#5':[61,47],'#6':[73,56],'#7':[106,81],'#8':[121,93],'#9':[136,105],'#10':[153,118],'#11':[170,131]},5000:{'#5':[54,42],'#6':[65,50],'#7':[95,73],'#8':[108,83],'#9':[121,94],'#10':[137,105],'#11':[152,117]},6000:{'#5':[50,38],'#6':[59,46],'#7':[86,67],'#8':[99,76],'#9':[111,85],'#10':[125,96],'#11':[139,107]},8000:{'#3':[28,21],'#4':[36,28],'#5':[44,34],'#6':[53,41],'#7':[77,59],'#8':[87,67],'#9':[97,75],'#10':[109,84],'#11':[120,93]}}};
+const CATLABEL={1:'Cover>2db & clear>4db',2:'All others',3:'Cover<db or clear<2db'};
+const LIVELOADS=[['Apartments / Condo / Hotel',40],['Public rooms, Lobbies',100],['Corridors / Fire escape',100],['Retail — 1st floor',100],['Retail — upper floors',75],['Office',50],['Light storage',125],['Heavy storage',250],['Garage (passenger)',40],['Loading dock / truck',250],['Roof — flat/pitched',20],['Roof — assembly',100]];
+
+/* ═══════════ CALCULATORS (formulas verified vs the sheets) ═══════════ */
+function strengthAt(days,fc28){ return fc28*days/(4+0.85*days); }
+function calcReshore(i){
+  const slabDL=i.t/12*i.wc, supDL=i.reinfMisc+i.meps+i.ceiling+i.flooring+i.partitions, formReshore=i.shoreLoad+i.reshoreLoad+i.formPanel;
+  const designCap=1.2*(slabDL+supDL)+1.6*i.designLL, constrCap=1.2*(slabDL+formReshore)+1.6*i.constrLL, constrCapASD=(slabDL+formReshore)+i.constrLL;
+  const area=i.spacingNS*i.spacingEW, postLRFD=area*constrCap, postASD=area*constrCapASD, posts=i.shoredArea>0?Math.ceil(i.shoredArea/area):0;
+  const rows=[]; let cum=0;
+  for(let L=1;L<=i.levels;L++){ const days=L*i.cycleDays, fcDay=Math.min(strengthAt(days,i.fc28),i.fc28), factor=Math.sqrt(fcDay/i.fc28), adjCap=factor*designCap, residual=adjCap-1.2*slabDL; cum+=residual; rows.push({L,days,fcDay,factor,adjCap,residual,cum,verdict:cum>=constrCap?'GOOD':'BAD'}); }
+  const stackOK=rows.length>0&&rows[rows.length-1].cum>=constrCap, firstGood=rows.find(r=>r.verdict==='GOOD'), minLevels=firstGood?firstGood.L:null;
+  const util=constrCap/designCap;
+  return {slabDL,supDL,formReshore,designCap,constrCap,constrCapASD,area,postLRFD,postASD,posts,rows,ok:stackOK,minLevels,util};
+}
+function calcFormwork(i){
+  const fullLiquid=i.wc*i.h; let P,mode; const colBase=i.Cw*i.Cc*(150+9000*i.R/i.T);
+  if(i.element==='column'){ P=Math.min(Math.max(colBase,600),fullLiquid,3000); mode='ACI 347 column'; }
+  else{ let base; if(i.R<=7){base=i.Cw*i.Cc*(150+9000*i.R/i.T);mode='wall R≤7';} else if(i.R<=15){base=i.Cw*i.Cc*(150+43400/i.T+2800*i.R/i.T);mode='wall 7<R≤15';} else {base=fullLiquid;mode='wall R>15';} P=Math.min(Math.max(base,600),fullLiquid,2000); }
+  const headFL=Math.max((P-600)/i.wc,0), tieLoad=i.tieH>0&&i.tieV>0?P*i.tieH*i.tieV:0, formArea=i.formLen>0?i.formLen*i.h:0, ties=(i.tieH>0&&i.tieV>0&&formArea>0)?Math.ceil(formArea/(i.tieH*i.tieV)):0;
+  return {fullLiquid,P,mode,headFL,tieLoad,formArea,ties};
+}
+const FT2M=0.3048;
+function calcPump(i){
+  const hM=i.heightFt*FT2M,lM=i.lengthFt*FT2M, sum=hM/4+lM/20+i.n90*1+i.n45*0.5+i.couplings*0.1+i.endHoses*2;
+  const pressureBar=(1+i.safetyPct/100)*(20+sum), pressurePsi=pressureBar*14.5038, outM3h=i.powerKW>0?25*i.powerKW/pressureBar:0, outCyHr=outM3h*1.30795;
+  const areaFt2=Math.PI*Math.pow(i.pipeDiaIn,2)/4/144, washoutCy=i.pipeDiaIn>0?areaFt2*i.lengthFt/27:0;
+  return {pressureBar,pressurePsi,outM3h,outCyHr,washoutCy,areaFt2};
+}
+function calcRebar(i){
+  const tbl=(LAP[i.cat]&&LAP[i.cat][i.fc]&&LAP[i.cat][i.fc][i.bar])||null; if(!tbl) return {avail:false};
+  const lap=i.pos==='top'?tbl[0]:tbl[1], ld=lap/1.3, b=BAR[i.bar], weight=i.totalLF>0?i.totalLF*b.w:0;
+  return {avail:true,lap,ld,db:b.db,area:b.A,wPerFt:b.w,weight};
+}
+function calcCrane(i){
+  const th=i.theta*Math.PI/180, Mboom=i.Wb*(i.t+i.Lb*Math.cos(th)), Mu=Mboom+i.pick*i.radius-i.Wu*i.du, Vu=i.Wb+i.pick+i.Wu, Mnr=Mu-Vu*i.Xo-i.Wc*i.dc, V=Vu+i.Wc;
+  const front=V/4-Mnr/(2*i.dl), rear=V/4+Mnr/(2*i.dl), maxLoad=Math.max(front,rear), padArea=i.padW*i.padL, bearing=padArea>0?maxLoad/padArea:0, padOK=i.allowBearing>0?bearing<=i.allowBearing:null;
+  return {Mboom,Mu,Vu,Mnr,V,front,rear,maxLoad,bearing,padArea,padOK};
+}
+
+/* ═══════════ HELPERS ═══════════ */
+const uid=(p)=>(p||'')+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const num=(v,d=0)=>(isFinite(v)?Number(v).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d}):'—');
+const round=(v,d=1)=>isFinite(v)?Math.round(v*Math.pow(10,d))/Math.pow(10,d):0;
+function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const LS='okt_data_v1';
+function loadLocal(){try{return JSON.parse(localStorage.getItem(LS))||{};}catch(e){return {};}}
+function saveLocal(d){try{localStorage.setItem(LS,JSON.stringify(d));}catch(e){}}
+
+/* ═══════════ ICONS (Lucide-style, stroke 1.5) ═══════════ */
+const P={
+  plus:'M12 5v14M5 12h14', arrowRight:'M5 12h14M13 6l6 6-6 6', back:'m15 18-6-6 6-6', chevron:'m6 9 6 6 6-6',
+  gauge:'m12 14 4-4', check:'M20 6 9 17l-5-5', send:'M4 12l16-7-7 16-2-7z',
+  spark:'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z', download:'M12 3v12M7 10l5 5 5-5M4 19h16',
+  grid:'M4 6h16M4 12h16M4 18h16M8 4v16M16 4v16', layers:'M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
+  x:'M18 6 6 18M6 6l12 12', sun:'M12 3v2M12 19v2M5 12H3M21 12h-2M6 6l1.5 1.5M16.5 16.5 18 18M18 6l-1.5 1.5M7.5 16.5 6 18',
+  moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z', printer:'M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z', file:'M14 3H6v18h12V8z'
+};
+function Icon({n,s=18,c}){
+  const extra=[];
+  if(n==='gauge') extra.push(<path key="a" d="M3.34 19a10 10 0 1 1 17.32 0" fill="none" stroke="currentColor" strokeWidth="1.5"/>);
+  if(n==='sun') extra.push(<circle key="c" cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>);
+  return <svg width={s} height={s} viewBox="0 0 24 24" style={c?{color:c}:null}>
+    <path d={P[n]} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>{extra}
+  </svg>;
+}
+
+/* ═══════════ ANIMATION HELPERS ═══════════ */
+function CountUp({value,dp=0}){
+  const [disp,setDisp]=useState(value); const mounted=useRef(false);
+  useEffect(()=>{
+    if(mounted.current){ setDisp(value); return; }
+    mounted.current=true;
+    if(!window.anime||!isFinite(value)){ setDisp(value); return; }
+    const o={v:0}; window.anime({targets:o,v:value,duration:650,easing:'easeOutExpo',update:()=>setDisp(o.v)});
+  },[value]);
+  return <>{num(disp,dp)}</>;
+}
+function useEnter(deps){
+  const ref=useRef(null);
+  useEffect(()=>{ if(MO&&ref.current) MO.animate(ref.current,{opacity:[0,1],transform:['translateY(10px)','translateY(0)']},{duration:.22,easing:'ease-out'}); },deps||[]);
+  return ref;
+}
+function useStagger(){
+  const ref=useRef(null);
+  useEffect(()=>{ if(MO&&ref.current){ const els=ref.current.querySelectorAll('[data-st]'); if(els.length) MO.animate(els,{opacity:[0,1],transform:['translateY(10px)','translateY(0)']},{delay:MO.stagger(0.045),duration:.24,easing:'ease-out'}); } },[]);
+  return ref;
+}
+
+/* ═══════════ SMALL PARTS ═══════════ */
+function Corners(){ return <>{['tl','tr','bl','br'].map(p=><span key={p} className={'cn '+p}/>)}</>; }
+function Frame({className='',children,el='div',...rest}){
+  const Cmp=el; return <Cmp className={'frame '+className} {...rest}><Corners/>{children}</Cmp>;
+}
+function Mark({size='s34'}){ return <span className={'mark '+size}>OK</span>; }
+function In({label,unit,value,onChange,step}){
+  return <label className="f">
+    <span className="f-main"><span className="f-lbl">{label}</span>
+      <input className="f-val" type="number" inputMode="decimal" step={step||'any'} value={value}
+        onChange={e=>onChange(e.target.value===''?'':parseFloat(e.target.value))}/></span>
+    {unit&&<span className="f-unit">{unit}</span>}
+  </label>;
+}
+function Seg({opts,value,onChange,mono}){
+  return <div className={'seg'+(mono?' mono':'')}>{opts.map(o=>{const v=o.v!==undefined?o.v:o,l=o.l!==undefined?o.l:o;
+    return <button key={String(v)} className={value===v?'on':''} onClick={()=>onChange(v)}>{l}</button>;})}</div>;
+}
+function RR({k,v,u,sub}){ return <div className="rr"><span className="k">{k}</span><span className="v">{v}{u&&<small> {u}</small>}{sub&&<small>{sub}</small>}</span></div>; }
+function ResultCard({kick,n,dp,u,tone,children}){
+  const ref=useEnter([]);
+  return <div ref={ref}><Frame className="result">
+    <div className="r-kick">{kick}</div>
+    <div className="r-hero"><span className={'r-n'+(tone?' '+tone:'')}><CountUp value={isFinite(n)?n:0} dp={dp||0}/></span><span className="r-u">{u}</span></div>
+    <div className="r-rows">{children}</div>
+  </Frame></div>;
+}
+
+/* ═══════════ CALC: RESHORE ═══════════ */
+function Reshore({onSave,onTakeoff}){
+  const [i,set]=useState({t:14,wc:150,reinfMisc:10,shoreLoad:5,reshoreLoad:5,formPanel:0,meps:15,ceiling:0,flooring:0,partitions:0,designLL:100,constrLL:30,fc28:6000,spacingNS:6,spacingEW:8,cycleDays:3,levels:5,shoredArea:0});
+  const u=(k)=>(v)=>set(s=>({...s,[k]:v}));
+  const r=useMemo(()=>calcReshore(i),[i]);
+  const items=[{category:'Reshore',desc:'Reshore posts @ '+i.spacingNS+'×'+i.spacingEW+' grid',qty:r.posts,unit:'EA'}];
+  if(i.shoredArea>0) items.push({category:'Reshore',desc:'Shored floor area',qty:round(i.shoredArea,0),unit:'SF'});
+  return <div className="split">
+    <div>
+      <p className="kick acc">Inputs</p>
+      <Frame className="card"><h3>Loads</h3><p className="ch">slab · superimposed · construction</p>
+        <div className="g2">
+          <In label="Slab thickness" unit="in" value={i.t} onChange={u('t')}/>
+          <In label="Unit weight" unit="pcf" value={i.wc} onChange={u('wc')}/>
+          <In label="Reinf & misc DL" unit="psf" value={i.reinfMisc} onChange={u('reinfMisc')}/>
+          <In label="MEPS DL" unit="psf" value={i.meps} onChange={u('meps')}/>
+          <In label="Shore load" unit="psf" value={i.shoreLoad} onChange={u('shoreLoad')}/>
+          <In label="Reshore load" unit="psf" value={i.reshoreLoad} onChange={u('reshoreLoad')}/>
+          <In label="Design LL" unit="psf" value={i.designLL} onChange={u('designLL')}/>
+          <In label="Construction LL" unit="psf" value={i.constrLL} onChange={u('constrLL')}/>
+        </div>
+        <div style={{marginTop:12}}>
+          <span className="field-lbl">Occupancy preset (ASCE 7-10)</span>
+          <select className="f-sel" onChange={e=>{const v=parseFloat(e.target.value); if(!isNaN(v)) u('designLL')(v);}}>
+            <option value="">— set design LL —</option>{LIVELOADS.map(([n,v])=><option key={n} value={v}>{n} ({v})</option>)}
+          </select>
+        </div>
+      </Frame>
+      <Frame className="card"><h3>Reshore grid &amp; cycle</h3><p className="ch">ACI 209 strength gain</p>
+        <div className="g2">
+          <In label="Spacing N-S" unit="ft" value={i.spacingNS} onChange={u('spacingNS')}/>
+          <In label="Spacing E-W" unit="ft" value={i.spacingEW} onChange={u('spacingEW')}/>
+          <In label="f'c @ 28d" unit="psi" value={i.fc28} onChange={u('fc28')}/>
+          <In label="Days / cycle" unit="d" value={i.cycleDays} onChange={u('cycleDays')}/>
+          <In label="# levels" unit="lvl" value={i.levels} onChange={u('levels')}/>
+          <In label="Shored area" unit="SF" value={i.shoredArea} onChange={u('shoredArea')}/>
+        </div>
+      </Frame>
+    </div>
+    <div>
+      <p className="kick acc">Result</p>
+      <ResultCard kick="Factored load per post — LRFD" n={r.postLRFD} u="lbs" tone={r.ok?'ok':'bad'}>
+        <RR k="Slab dead load" v={num(r.slabDL,0)} u="psf"/>
+        <RR k="Design capacity (in-service)" v={num(r.designCap,0)} u="psf"/>
+        <RR k="Construction demand" v={num(r.constrCap,0)} u="psf"/>
+        <RR k="Peak utilization" v={num(r.util*100,0)} u="%"/>
+        <RR k="Reshore bay area" v={num(r.area,0)} u="sf"/>
+        {i.shoredArea>0&&<RR k="Reshore posts required" v={num(r.posts,0)} u="EA"/>}
+        <div className="r-act">
+          <button className="b sec" onClick={()=>onSave('reshore','Reshore '+i.t+'" slab',i,r)}>Save run</button>
+          <button className="b ok" onClick={()=>onTakeoff(items)} disabled={!r.posts}><Icon n="check" s={16}/>Add to takeoff</button>
+        </div>
+      </ResultCard>
+      <Frame className="card" style={{marginTop:14}}>
+        <h3>Per-level stack {r.ok?<span className="vp good">STACK OK</span>:<span className="vp bad">SHORT</span>}</h3>
+        <p className="ch">cumulative capacity vs demand · GOOD once the stack carries it</p>
+        <table className="vt"><thead><tr><th>Lvl</th><th>Days</th><th>f'c</th><th>Resid.</th><th>Cumul.</th><th>Verdict</th></tr></thead>
+        <tbody>{r.rows.map(row=><tr key={row.L}><td>{row.L}</td><td>{row.days}</td><td>{num(row.fcDay,0)}</td><td>{num(row.residual,0)}</td><td>{num(row.cum,0)}</td><td style={{textAlign:'right'}}><span className={'vp '+(row.verdict==='GOOD'?'good':'bad')}>{row.verdict}</span></td></tr>)}</tbody></table>
+        <div className={'callout '+(r.ok?'ok':'bad')}>
+          <Icon n={r.ok?'check':'x'} s={18}/>
+          <div><div className="ct">{r.ok?('Stack OK — min '+(r.minLevels||i.levels)+' levels'):'Stack NG — short of demand'}</div>
+          <div className="cb">{r.ok?('The full '+i.levels+'-level reshore stack carries the factored construction load.'):('Even '+i.levels+' levels fall short of '+num(r.constrCap,0)+' psf — tighten the grid or extend the cycle.')}</div></div>
+        </div>
+      </Frame>
+    </div>
+  </div>;
+}
+
+/* ═══════════ CALC: FORMWORK ═══════════ */
+function Formwork({onSave,onTakeoff}){
+  const [i,set]=useState({element:'wall',wc:150,h:10,R:5,T:70,Cw:1,Cc:1.2,tieH:2,tieV:2,formLen:0});
+  const u=(k)=>(v)=>set(s=>({...s,[k]:v}));
+  const r=useMemo(()=>calcFormwork(i),[i]);
+  const items=[]; if(r.formArea>0) items.push({category:'Formwork',desc:i.element+' forms — '+i.h+'ft high',qty:round(r.formArea,0),unit:'SF'});
+  if(r.ties>0) items.push({category:'Formwork',desc:'Form ties @ '+i.tieH+'×'+i.tieV,qty:r.ties,unit:'EA'});
+  return <div className="split">
+    <div>
+      <p className="kick acc">Inputs</p>
+      <Frame className="card"><h3>ACI 347 form pressure</h3><p className="ch">lateral pressure on the forms</p>
+        <div style={{marginBottom:12}}><span className="field-lbl">Element</span>
+          <Seg opts={[{v:'column',l:'Column'},{v:'wall',l:'Wall'}]} value={i.element} onChange={u('element')}/></div>
+        <div className="g2">
+          <In label="Pour rate R" unit="ft/hr" value={i.R} onChange={u('R')}/>
+          <In label="Concrete temp T" unit="°F" value={i.T} onChange={u('T')}/>
+          <In label="Form height h" unit="ft" value={i.h} onChange={u('h')}/>
+          <In label="Unit weight" unit="pcf" value={i.wc} onChange={u('wc')}/>
+          <In label="Cw weight coef" unit="—" value={i.Cw} onChange={u('Cw')}/>
+          <In label="Cc chem coef" unit="—" value={i.Cc} onChange={u('Cc')}/>
+        </div>
+      </Frame>
+      <Frame className="card"><h3>Ties &amp; area <span style={{fontFamily:'var(--mo)',fontSize:9,color:'var(--mut)',fontWeight:400}}>OPTIONAL</span></h3>
+        <div className="g3">
+          <In label="Tie spc H" unit="ft" value={i.tieH} onChange={u('tieH')}/>
+          <In label="Tie spc V" unit="ft" value={i.tieV} onChange={u('tieV')}/>
+          <In label="Form length" unit="ft" value={i.formLen} onChange={u('formLen')}/>
+        </div>
+      </Frame>
+    </div>
+    <div>
+      <p className="kick acc">Result</p>
+      <ResultCard kick={'Max design pressure — '+r.mode} n={r.P} u="psf" tone="">
+        <RR k="Full liquid head (w·h)" v={num(r.fullLiquid,0)} u="psf"/>
+        <RR k="Depth to full-liquid head" v={round(r.headFL,1)} u="ft"/>
+        {r.tieLoad>0&&<RR k="Load per form tie" v={num(r.tieLoad,0)} u="lbs"/>}
+        {r.formArea>0&&<RR k="Form contact area" v={num(r.formArea,0)} u="sf"/>}
+        {r.ties>0&&<RR k="Ties required" v={num(r.ties,0)} u="EA"/>}
+        <div className="r-act">
+          <button className="b sec" onClick={()=>onSave('formwork','Formwork '+i.element+' '+num(r.P,0)+'psf',i,r)}>Save run</button>
+          <button className="b ok" onClick={()=>onTakeoff(items)} disabled={!items.length}><Icon n="check" s={16}/>Add to takeoff</button>
+        </div>
+      </ResultCard>
+      <div className="note"><b>ACI 347:</b> pressure capped at full-liquid head (w·h), floored at 600 psf. Verify tie &amp; stud capacity against the load per tie before the pour.</div>
+    </div>
+  </div>;
+}
+
+/* ═══════════ CALC: PUMP ═══════════ */
+function Pump({onSave,onTakeoff}){
+  const [i,set]=useState({heightFt:75,lengthFt:200,n90:5,n45:2,couplings:23,endHoses:2,safetyPct:52,powerKW:150,pipeDiaIn:5});
+  const u=(k)=>(v)=>set(s=>({...s,[k]:v})); const r=useMemo(()=>calcPump(i),[i]);
+  const items=[]; if(i.lengthFt>0) items.push({category:'Pump',desc:'Pump line — '+i.pipeDiaIn+'" pipe',qty:round(i.lengthFt,0),unit:'LF'});
+  if(r.washoutCy>0) items.push({category:'Pump',desc:'Line washout volume',qty:round(r.washoutCy,2),unit:'CY'});
+  return <div className="split">
+    <div>
+      <p className="kick acc">Inputs</p>
+      <Frame className="card"><h3>Putzmeister quick-form</h3><p className="ch">will it pump? — bar-pressure method</p>
+        <div className="g2">
+          <In label="Pump height" unit="ft" value={i.heightFt} onChange={u('heightFt')}/>
+          <In label="Total line length" unit="ft" value={i.lengthFt} onChange={u('lengthFt')}/>
+          <In label="90° elbows" unit="EA" value={i.n90} onChange={u('n90')}/>
+          <In label="45° elbows" unit="EA" value={i.n45} onChange={u('n45')}/>
+          <In label="Pipe couplings" unit="EA" value={i.couplings} onChange={u('couplings')}/>
+          <In label="End hoses (5m)" unit="EA" value={i.endHoses} onChange={u('endHoses')}/>
+        </div>
+        <div className="g3" style={{marginTop:14}}>
+          <In label="Safety factor" unit="%" value={i.safetyPct} onChange={u('safetyPct')}/>
+          <In label="Pump power" unit="kW" value={i.powerKW} onChange={u('powerKW')}/>
+          <In label="Pipe dia" unit="in" value={i.pipeDiaIn} onChange={u('pipeDiaIn')}/>
+        </div>
+      </Frame>
+    </div>
+    <div>
+      <p className="kick acc">Result</p>
+      <ResultCard kick="Max achievable output" n={r.outCyHr} dp={1} u="cy/hr" tone="">
+        <RR k="Required pressure" v={round(r.pressureBar,1)} u="bar"/>
+        <RR k="Required pressure" v={num(r.pressurePsi,0)} u="psi"/>
+        <RR k="Output (metric)" v={round(r.outM3h,1)} u="m³/hr"/>
+        <RR k="Line washout volume" v={round(r.washoutCy,2)} u="cy"/>
+        <div className="r-act">
+          <button className="b sec" onClick={()=>onSave('pump','Pump '+round(r.outCyHr,0)+'cy/hr',i,r)}>Save run</button>
+          <button className="b ok" onClick={()=>onTakeoff(items)} disabled={!items.length}><Icon n="check" s={16}/>Add to takeoff</button>
+        </div>
+      </ResultCard>
+      <div className="note"><b>Field rule:</b> start-up 20 bar + height×0.25 + length×0.05 /m + elbows/couplings/hoses, ×(1+SF). Output = 25 × kW ÷ pressure. If required pressure exceeds the pump rating, shorten the line or add power.</div>
+    </div>
+  </div>;
+}
+
+/* ═══════════ CALC: REBAR + CRANE ═══════════ */
+function RebarCrane({onSave,onTakeoff}){
+  const [tab,setTab]=useState('rebar');
+  return <div>
+    <div style={{marginBottom:18,maxWidth:340}}><Seg opts={[{v:'rebar',l:'Rebar lap/dev'},{v:'crane',l:'Crane outrigger'}]} value={tab} onChange={setTab}/></div>
+    {tab==='rebar'?<RebarTab onSave={onSave} onTakeoff={onTakeoff}/>:<CraneTab onSave={onSave} onTakeoff={onTakeoff}/>}
+  </div>;
+}
+function RebarTab({onSave,onTakeoff}){
+  const [i,set]=useState({bar:'#8',fc:5000,pos:'top',cat:1,totalLF:0}); const u=(k)=>(v)=>set(s=>({...s,[k]:v}));
+  const r=useMemo(()=>calcRebar(i),[i]);
+  const items=r.avail&&r.weight>0?[{category:'Rebar',desc:i.bar+' bar ('+num(r.weight,0)+' lb)',qty:round(r.weight,0),unit:'LBS'}]:[];
+  return <div className="split">
+    <div>
+      <p className="kick acc">Inputs</p>
+      <Frame className="card"><h3>ACI 318-14 lap &amp; development</h3><p className="ch">Grade 60 · normal-weight · Class B</p>
+        <div className="stack">
+          <div><span className="field-lbl">Bar size</span><Seg mono opts={BARS} value={i.bar} onChange={u('bar')}/></div>
+          <div><span className="field-lbl">Concrete f'c</span><Seg mono opts={FCS.map(f=>({v:f,l:f/1000+'k'}))} value={i.fc} onChange={u('fc')}/></div>
+          <div><span className="field-lbl">Bar position</span><Seg opts={[{v:'top',l:'Top'},{v:'bot',l:'Other/Bottom'}]} value={i.pos} onChange={u('pos')}/></div>
+          <div><span className="field-lbl">Cover / spacing category</span>
+            <select className="f-sel" value={i.cat} onChange={e=>u('cat')(parseInt(e.target.value))}>{[1,2,3].map(c=><option key={c} value={c}>Cat {c} — {CATLABEL[c]}</option>)}</select></div>
+          <In label="Total length (for weight)" unit="LF" value={i.totalLF} onChange={u('totalLF')}/>
+        </div>
+      </Frame>
+    </div>
+    <div>
+      <p className="kick acc">Result</p>
+      {r.avail?<ResultCard kick={'Class B lap splice — '+i.pos} n={r.lap} u="in" tone="">
+        <RR k="Tension development Ld" v={round(r.ld,0)} u="in" sub={' · '+round(r.ld/12,1)+' ft'}/>
+        <RR k="Lap length" v={r.lap} u="in" sub={' · '+round(r.lap/12,1)+' ft'}/>
+        <RR k="Bar diameter" v={r.db} u="in"/>
+        <RR k="Bar area" v={r.area} u="in²"/>
+        <RR k="Unit weight" v={r.wPerFt} u="lb/ft"/>
+        {r.weight>0&&<RR k="Total steel weight" v={num(r.weight,0)} u="lbs" sub={' · '+round(r.weight/2000,2)+' t'}/>}
+        <div className="r-act">
+          <button className="b sec" onClick={()=>onSave('rebar',i.bar+' lap '+r.lap+'in',i,r)}>Save run</button>
+          <button className="b ok" onClick={()=>onTakeoff(items)} disabled={!items.length}><Icon n="check" s={16}/>Add to takeoff</button>
+        </div>
+      </ResultCard>:<div className="empty">No table value for {i.bar} at {i.fc} psi, Cat {i.cat}.</div>}
+      <div className="note"><b>Note:</b> Class B lap = 1.3 × L<sub>d</sub>. ACI 318-14 §25.4/§25.5, Grade 60 normal-weight, uncoated.</div>
+    </div>
+  </div>;
+}
+function CraneTab({onSave,onTakeoff}){
+  const [i,set]=useState({Wc:94070,Wu:131490,Wb:23716,pick:100000,radius:28,theta:81.7,Lb:68,t:3.625,du:9.23,dc:6.84,Xo:2.25,dl:18.79,padW:4,padL:4,allowBearing:4000});
+  const u=(k)=>(v)=>set(s=>({...s,[k]:v})); const r=useMemo(()=>calcCrane(i),[i]);
+  return <div className="split">
+    <div>
+      <p className="kick acc">Inputs</p>
+      <Frame className="card"><h3>Outrigger reactions</h3><p className="ch">from crane geometry &amp; pick</p>
+        <div className="g2">
+          <In label="Carrier wt Wc" unit="lb" value={i.Wc} onChange={u('Wc')}/>
+          <In label="Upperworks Wu" unit="lb" value={i.Wu} onChange={u('Wu')}/>
+          <In label="Boom wt Wb" unit="lb" value={i.Wb} onChange={u('Wb')}/>
+          <In label="Pick weight" unit="lb" value={i.pick} onChange={u('pick')}/>
+          <In label="Radius" unit="ft" value={i.radius} onChange={u('radius')}/>
+          <In label="Boom angle θ" unit="°" value={i.theta} onChange={u('theta')}/>
+        </div>
+        <div className="g3" style={{marginTop:12}}>
+          <In label="Boom length" unit="ft" value={i.Lb} onChange={u('Lb')}/>
+          <In label="Front↔rear" unit="ft" value={i.dl} onChange={u('dl')}/>
+          <In label="Outrig→axis" unit="ft" value={i.Xo} onChange={u('Xo')}/>
+        </div>
+        <h3 style={{marginTop:16,fontSize:15}}>Pad check</h3>
+        <div className="g3" style={{marginTop:8}}>
+          <In label="Pad width" unit="ft" value={i.padW} onChange={u('padW')}/>
+          <In label="Pad length" unit="ft" value={i.padL} onChange={u('padL')}/>
+          <In label="Allow bearing" unit="psf" value={i.allowBearing} onChange={u('allowBearing')}/>
+        </div>
+      </Frame>
+    </div>
+    <div>
+      <p className="kick acc">Result</p>
+      <ResultCard kick="Max outrigger reaction" n={r.maxLoad} u="lbs" tone={r.padOK===false?'bad':''}>
+        <RR k="Front outrigger" v={num(r.front,0)} u="lbs"/>
+        <RR k="Rear outrigger" v={num(r.rear,0)} u="lbs"/>
+        <RR k="Total vertical load" v={num(r.V,0)} u="lbs"/>
+        <RR k="Bearing under pad" v={num(r.bearing,0)} u="psf"/>
+        <RR k="Pad check" v={r.padOK===null?'—':(r.padOK?'OK':'OVER')}/>
+        <div className="r-act">
+          <button className="b sec block" onClick={()=>onSave('crane','Crane '+num(i.pick,0)+'lb @ '+i.radius+'ft',i,r)}>Save run</button>
+        </div>
+      </ResultCard>
+      <div className={'callout '+(r.padOK===false?'bad':'ok')} style={{marginTop:14}}>
+        <Icon n={r.padOK===false?'x':'check'} s={18}/>
+        <div><div className="ct">{r.padOK===false?'Pad over capacity':'Reactions computed'}</div>
+        <div className="cb">{r.padOK===false?'Bearing exceeds allowable — increase pad size or reduce radius.':'Static equilibrium about the outrigger box. Confirm against the crane load chart.'}</div></div>
+      </div>
+    </div>
+  </div>;
+}
+
+/* ═══════════ DASHBOARD ═══════════ */
+function Dashboard({project,go}){
+  const runs=project.runs?Object.values(project.runs):[]; const items=project.takeoff&&project.takeoff.items?Object.values(project.takeoff.items):[];
+  const est=items.reduce((s,it)=>s+(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),0);
+  const byType={}; runs.forEach(r=>{byType[r.type]=(byType[r.type]||0)+1;});
+  const tiles=[{k:'formwork',n:'Form pressure',i:'gauge',h:'psf · pcf · °F · ft/hr'},{k:'reshore',n:'Reshore stack',i:'layers',h:'psf · lvl · f\'c'},{k:'rebar',n:'Rebar & crane',i:'grid',h:'ACI 318 · lb'},{k:'pump',n:'Pour & pump',i:'gauge',h:'bar · cy/hr'}];
+  const gref=useStagger();
+  return <div ref={gref}>
+    <div className="g2" style={{marginBottom:18}}>
+      <div data-st><Frame className="stat"><div className="sk">Saved runs</div><div className="sv">{runs.length}</div></Frame></div>
+      <div data-st><Frame className="stat"><div className="sk">Takeoff items</div><div className="sv">{items.length}</div>{est>0&&<div className="ss">≈ ${num(est,0)}</div>}</Frame></div>
+    </div>
+    <p className="kick">Calculators</p>
+    <div className="g2">{tiles.map(t=><button key={t.k} data-st onClick={()=>go(t.k)}><Frame className="tile"><Icon n={t.i} s={22}/><div className="tt">{t.n}{byType[t.k]?<span className="vp clear" style={{marginLeft:8,fontSize:9}}>{byType[t.k]}</span>:null}</div><div className="th">{t.h}</div></Frame></button>)}</div>
+    {runs.length>0&&<div style={{marginTop:20}}>
+      <p className="kick">Recent runs</p>
+      <div className="rlist">{runs.slice().reverse().slice(0,6).map(r=><div className="ri" key={r.id}><span className="vp clear" style={{fontSize:9}}>{r.type}</span><span className="rn">{r.label}</span><span className="rt">{r.date}</span></div>)}</div>
+    </div>}
+    <div style={{marginTop:22}}><button className="b pri big block" onClick={()=>go('takeoff')}>Build the takeoff<Icon n="arrowRight" s={18}/></button></div>
+  </div>;
+}
+
+/* ═══════════ TAKEOFF ═══════════ */
+const CATS=['Concrete','Formwork','Reshore','Rebar','Pump','Other'];
+function Takeoff({project,setItems,toast}){
+  const items=project.takeoff&&project.takeoff.items?Object.values(project.takeoff.items):[];
+  const map=()=>({...(project.takeoff&&project.takeoff.items||{})});
+  const upd=(id,patch)=>{const m=map();m[id]={...m[id],...patch};setItems(m);};
+  const del=(id)=>{const m=map();delete m[id];setItems(m);};
+  const add=(cat)=>{const id=uid('t');const m=map();m[id]={id,category:cat||'Other',desc:'',qty:0,unit:'EA',rate:0};setItems(m);};
+  const grouped={}; items.forEach(it=>{(grouped[it.category]=grouped[it.category]||[]).push(it);});
+  const grand=items.reduce((s,it)=>s+(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),0);
+  const subtotal=(c)=>(grouped[c]||[]).reduce((s,it)=>s+(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),0);
+  function exportXLSX(){ if(!window.XLSX){toast('Export loading…');return;}
+    const aoa=[['OnKlooth Takeoff — '+project.meta.name],['Job',project.meta.jobNumber||'','','Date',todayISO()],[],['Category','Description','Qty','Unit','Unit $','Total $']];
+    CATS.forEach(c=>(grouped[c]||[]).forEach(it=>{const t=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);aoa.push([it.category,it.desc,it.qty,it.unit,it.rate||'',t||'']);}));
+    aoa.push([],['','','','','TOTAL',grand]); const ws=XLSX.utils.aoa_to_sheet(aoa),wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Takeoff');
+    XLSX.writeFile(wb,'OnKloothTakeoff_'+(project.meta.name||'project').replace(/\s+/g,'_')+'_'+todayISO()+'.xlsx');
+  }
+  function exportPDF(){ const J=window.jspdf&&window.jspdf.jsPDF; if(!J){toast('Export loading…');return;}
+    const doc=new J(); doc.setFillColor(30,102,200);doc.rect(14,12,10,10,'F');doc.setTextColor(255);doc.setFont(undefined,'bold');doc.setFontSize(9);doc.text('OK',16.5,19);
+    doc.setTextColor(20);doc.setFontSize(15);doc.text('ONKLOOTH TAKEOFF',28,17); doc.setFontSize(8);doc.setTextColor(110);doc.setFont(undefined,'normal');
+    doc.text('FIELD ENG · '+todayISO(),28,22);
+    doc.setFontSize(9);doc.setTextColor(40);doc.text((project.meta.name||'')+'    JOB '+(project.meta.jobNumber||'—')+'    '+(project.meta.location||''),14,30);
+    const rows=[]; CATS.forEach(c=>(grouped[c]||[]).forEach(it=>{const t=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);rows.push([it.category,it.desc,num(it.qty,2),it.unit,it.rate?('$'+num(it.rate,2)):'',t?('$'+num(t,2)):'']);}));
+    doc.autoTable({startY:36,head:[['Category','Description','Qty','Unit','Unit $','Total $']],body:rows,styles:{fontSize:9,font:'courier'},headStyles:{fillColor:[47,128,237]},foot:[['','','','','GRAND TOTAL','$'+num(grand,2)]],footStyles:{fillColor:[79,195,65],textColor:20}});
+    let y=doc.lastAutoTable.finalY+18; doc.setDrawColor(180);doc.setTextColor(120);doc.setFontSize(8);
+    ['PREPARED BY','REVIEWED BY','DATE'].forEach((l,x)=>{const cx=14+x*64;doc.line(cx,y,cx+56,y);doc.text(l,cx,y+5);});
+    doc.save('OnKloothTakeoff_'+(project.meta.name||'project').replace(/\s+/g,'_')+'_'+todayISO()+'.pdf');
+  }
+  return <div>
+    <div className="tk-tools"><button className="b sec" onClick={()=>add('Concrete')}><Icon n="plus" s={16}/>Line item</button><span className="sp"/>
+      <button className="b sec" onClick={exportXLSX}><Icon n="file" s={16}/>XLSX</button>
+      <button className="b pri" onClick={exportPDF}><Icon n="printer" s={16}/>PDF</button></div>
+    {items.length===0?<div className="empty">No takeoff items yet. Run a calculator and hit <b>Add to takeoff</b>, or press <b>+ Line item</b>.</div>:
+    <Frame className="tk">
+      <div className="tk-hd"><span>Description</span><span>Qty</span><span>Unit</span><span>Unit $</span><span>Total $</span><span/></div>
+      {CATS.filter(c=>grouped[c]).map(c=><div key={c}>
+        <div className="tk-cat"><span className="cl">{c}</span><span className="cs">{subtotal(c)?('$'+num(subtotal(c),0)):(grouped[c].length+' items')}</span></div>
+        {grouped[c].map(it=><div className="tk-row" key={it.id}>
+          <div className="tk-cell"><input className="tk-in" value={it.desc} placeholder="description" onChange={e=>upd(it.id,{desc:e.target.value})}/></div>
+          <div className="tk-cell"><input className="tk-in num qty" type="number" inputMode="decimal" value={it.qty} onChange={e=>upd(it.id,{qty:e.target.value})}/></div>
+          <div className="tk-cell"><input className="tk-in" value={it.unit} onChange={e=>upd(it.id,{unit:e.target.value})}/></div>
+          <div className="tk-cell"><input className="tk-in num rate" type="number" inputMode="decimal" value={it.rate||''} placeholder="—" onChange={e=>upd(it.id,{rate:e.target.value})}/></div>
+          <div className="tk-tot">{((parseFloat(it.qty)||0)*(parseFloat(it.rate)||0))?('$'+num((parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),2)):'—'}</div>
+          <div className="tk-cell" style={{padding:0}}><button className="tk-x" onClick={()=>del(it.id)}>×</button></div>
+        </div>)}
+      </div>)}
+    </Frame>}
+    {items.length>0&&<div className="totbar"><div><div className="tk-lbl">Grand total</div><div className="tk-g">${num(grand,0)}</div></div>
+      <span style={{flex:1}}/><button className="b pri mid" onClick={exportPDF}><Icon n="download" s={16}/>Export sheet</button></div>}
+  </div>;
+}
+
+/* ═══════════ ALFRED ═══════════ */
+function Alfred({tab}){
+  const [open,setOpen]=useState(false);
+  const [msgs,setMsgs]=useState([{r:'a',t:"Alfred here. Ask me to explain a result or which code section applies — e.g. \"why is a reshore level BAD?\" or \"what's the ACI 347 wall pressure rule?\""}]);
+  const [q,setQ]=useState(''); const [busy,setBusy]=useState(false); const end=useRef(null); const sheet=useRef(null);
+  useEffect(()=>{ if(end.current) end.current.scrollIntoView(); },[msgs,open]);
+  useEffect(()=>{ if(open&&MO&&sheet.current) MO.animate(sheet.current,{transform:['translateY(100%)','translateY(0)']},{duration:.2,easing:[.2,.8,.2,1]}); },[open]);
+  async function send(){ if(!q.trim()||busy) return; const question=q.trim(); setQ(''); setMsgs(m=>[...m,{r:'u',t:question}]); setBusy(true);
+    try{ let key=null; try{ key=window.fb?await window.fb.rootGet('config/minimax_key'):null; }catch(e){} if(!key) key=localStorage.getItem('minimax_key');
+      if(!key){ setMsgs(m=>[...m,{r:'a',t:"No AI key configured — this is the offline prototype. Add a MiniMax key (localStorage 'minimax_key') to enable me. The calculators work fully without me."}]); setBusy(false); return; }
+      const res=await fetch('https://api.minimax.io/anthropic/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'MiniMax-M2.7',max_tokens:600,system:"You are Alfred, a concrete-superintendent assistant inside OnKlooth Takeoff. Be concise and practical. Cite ACI 318 / ACI 347 / ASCE 7 where relevant. Current tab: "+tab+".",messages:[{role:'user',content:question}]})});
+      const j=await res.json(); setMsgs(m=>[...m,{r:'a',t:(j.content&&j.content[0]&&j.content[0].text)||(j.error&&j.error.message)||'No response.'}]);
+    }catch(e){ setMsgs(m=>[...m,{r:'a',t:'Offline or network error — Alfred needs a connection. Calculators still work.'}]); }
+    setBusy(false);
+  }
+  return <>
+    <button className="fab" onClick={()=>setOpen(o=>!o)} title="Alfred"><Icon n={open?'x':'spark'} s={22}/></button>
+    {open&&<div className="sheet" ref={sheet}>
+      <div className="sheet-hd"><Icon n="spark" s={18}/><div><div className="sh1">Alfred</div><div className="sh2">FIELD ASSISTANT</div></div><span style={{flex:1}}/><button className="b icon sec" onClick={()=>setOpen(false)}><Icon n="x" s={16}/></button></div>
+      <div className="sheet-msgs">{msgs.map((m,x)=><div key={x} className={'msg '+(m.r==='u'?'u':'a')}>{m.t}</div>)}<div ref={end}/></div>
+      <div className="sheet-in"><input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} placeholder="Yap at Alfred…"/><button className="b pri icon" onClick={send} disabled={busy}><Icon n="send" s={16}/></button></div>
+    </div>}
+  </>;
+}
+
+/* ═══════════ MODAL / SYNC / THEME ═══════════ */
+function ProjectModal({onClose,onCreate}){
+  const [f,setF]=useState({name:'',jobNumber:'',location:''}); const ref=useRef(null);
+  useEffect(()=>{ if(MO&&ref.current) MO.animate(ref.current,{opacity:[0,1],transform:['scale(.96)','scale(1)']},{duration:.16,easing:'ease-out'}); },[]);
+  return <div className="ov grid-bg" onClick={onClose}><div className="dialog" ref={ref} onClick={e=>e.stopPropagation()}>
+    <span className="dk">New project</span><h3>Start a project</h3>
+    <div className="stack">
+      <label className="f"><span className="f-main"><span className="f-lbl">Project name</span><input className="f-val" style={{fontFamily:'var(--bd)',fontSize:15}} autoFocus value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="Marina Shores — Bldg A"/></span></label>
+      <label className="f"><span className="f-main"><span className="f-lbl">Job number</span><input className="f-val" value={f.jobNumber} onChange={e=>setF({...f,jobNumber:e.target.value})} placeholder="24-118"/></span><span className="f-unit">NO.</span></label>
+      <label className="f"><span className="f-main"><span className="f-lbl">Location</span><input className="f-val" style={{fontFamily:'var(--bd)',fontSize:15}} value={f.location} onChange={e=>setF({...f,location:e.target.value})} placeholder="Mission Bay, SF"/></span><span className="f-unit"><Icon n="grid" s={14}/></span></label>
+    </div>
+    <div className="dact"><button className="b sec" style={{flex:1}} onClick={onClose}>Cancel</button><button className="b pri" style={{flex:1.6}} disabled={!f.name.trim()} onClick={()=>onCreate(f)}>Create project</button></div>
+  </div></div>;
+}
+function SyncChip({fb,online}){
+  const state=!fb?'local':(online?'synced':'offline');
+  const lbl={synced:'Synced',local:'Local',offline:'Offline'}[state];
+  return <span className={'chip '+state} title={state==='synced'?'Synced to cloud':state==='local'?'Local-only mode':'Offline — saved locally'}><span className="cd"/>{lbl}</span>;
+}
+function ThemeBtn({theme,setTheme}){
+  return <button className="b icon sec" title="Toggle theme" onClick={()=>setTheme(theme==='dark'?'light':'dark')}><Icon n={theme==='dark'?'sun':'moon'} s={18}/></button>;
+}
+
+/* ═══════════ ROOT ═══════════ */
+function App(){
+  const [data,setData]=useState(loadLocal);
+  const [activeId,setActiveId]=useState(()=>localStorage.getItem('okt_active')||null);
+  const [tab,setTab]=useState('dash'); const [modal,setModal]=useState(false); const [navOpen,setNavOpen]=useState(false);
+  const [online,setOnline]=useState(false); const [toastMsg,setToastMsg]=useState(null);
+  const [theme,setTheme]=useState(()=>localStorage.getItem('okt_theme')||'dark');
+  const toast=(m)=>{ setToastMsg(m); setTimeout(()=>setToastMsg(null),2200); };
+  useEffect(()=>{ document.documentElement.setAttribute('data-theme',theme); localStorage.setItem('okt_theme',theme);
+    document.querySelector('meta[name=theme-color]').setAttribute('content',theme==='dark'?'#0a1017':'#f2f4f6'); },[theme]);
+  useEffect(()=>{ if(!window.fb) return; window.fb.connState(setOnline); const off=window.fb.listen('projects',(v)=>{ if(v){ setData(v); saveLocal(v); } }); return off; },[]);
+
+  const projects=Object.keys(data).map(id=>({id,...data[id]}));
+  const active=activeId&&data[activeId]?data[activeId]:null;
+  const writeProject=useCallback((id,proj)=>{ setData(prev=>{const next={...prev,[id]:proj};saveLocal(next);return next;}); if(window.fb) window.fb.set('projects/'+id,proj).catch(()=>{}); },[]);
+  function createProject(f){ const id=uid('p'); const proj={meta:{name:f.name.trim(),jobNumber:f.jobNumber,location:f.location,createdAt:todayISO()},runs:{},takeoff:{items:{}}};
+    writeProject(id,proj); setActiveId(id); localStorage.setItem('okt_active',id); setModal(false); setTab('dash'); toast('Project created & synced'); }
+  function selectProject(id){ setActiveId(id); localStorage.setItem('okt_active',id); setTab('dash'); }
+  const saveRun=(type,label,inputs,outputs)=>{ if(!active) return; const id=uid('r'); const runs={...(active.runs||{}),[id]:{id,type,label,inputs,date:todayISO()}}; writeProject(activeId,{...active,runs}); toast('Run saved to '+active.meta.name); };
+  const addTakeoff=(items)=>{ if(!active) return; const m={...((active.takeoff&&active.takeoff.items)||{})}; items.forEach(it=>{const id=uid('t');m[id]={id,...it,rate:0};}); writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); toast(items.length+' item(s) added to takeoff'); };
+  const setTakeoffItems=(m)=>{ if(!active) return; writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); };
+
+  const NAV=[{g:'PROJECT'},{k:'dash',n:'Dashboard',i:'grid'},{k:'takeoff',n:'Takeoff',i:'file',badge:active&&active.takeoff&&active.takeoff.items?Object.keys(active.takeoff.items).length:0},
+    {g:'CALCULATORS'},{k:'formwork',n:'Formwork',i:'gauge'},{k:'reshore',n:'Reshore',i:'layers'},{k:'pump',n:'Concrete Pump',i:'gauge'},{k:'rebar',n:'Rebar + Crane',i:'grid'}];
+  const TITLES={dash:['Dashboard','','project overview & calc runs'],takeoff:['Takeoff','','aggregate quantities → export'],
+    reshore:['Reshore / Backshore','ACI 209 · SIMPLIFIED','multi-level construction load capacity'],formwork:['Formwork Pressure','ACI 347','lateral form pressure'],
+    pump:['Concrete Pump','PUTZMEISTER','pressure, output & washout'],rebar:['Rebar + Crane','ACI 318-14','lap/dev · outrigger loads']};
+
+  return <div className="app">
+    <div className="topbar">
+      <button className="b icon sec menu-btn" onClick={()=>setNavOpen(o=>!o)}><Icon n="grid" s={18}/></button>
+      <Mark size="s34"/>
+      <div className="lockup"><span className="lk1">ONKLOOTH</span><span className="lk2">TAKEOFF · FIELD ENG</span></div>
+      <span className="sp"/>
+      {projects.length>0&&active&&<div className="projsel" onClick={()=>{ const ids=projects.map(p=>p.id); const cur=ids.indexOf(activeId); selectProject(ids[(cur+1)%ids.length]); }} title="Switch project">{active.meta.name}<Icon n="chevron" s={16}/></div>}
+      <ThemeBtn theme={theme} setTheme={setTheme}/>
+      <button className="b sec" onClick={()=>setModal(true)}><Icon n="plus" s={16}/>New</button>
+      <SyncChip fb={window.fb} online={online}/>
+    </div>
+
+    {!active?<div className="main"><div className="welcome-wrap">
+      <Mark size="s56"/>
+      <p className="kick acc" style={{marginTop:18}}>OpenYap field tools</p>
+      <h1 className="hero-h">Concrete numbers,<br/>on the deck.</h1>
+      <p className="hero-sub">Start a project — every reshore, formwork, pump and rebar calc you run saves and syncs, then rolls up into a takeoff you can export.</p>
+      <button className="b pri big" onClick={()=>setModal(true)}><Icon n="plus" s={18}/>Start a project</button>
+      {projects.length>0&&<div style={{marginTop:28}}>
+        <p className="kick">On this device</p>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>{projects.map(p=><button key={p.id} onClick={()=>selectProject(p.id)}><Frame className="proj-card"><div><div className="pn">{p.meta.name}</div><div className="pm">JOB {p.meta.jobNumber||'—'} · {p.meta.location||'—'}</div></div><Icon n="chevron" s={18} c="var(--mut)"/></Frame></button>)}</div>
+      </div>}
+      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.1 — YAP LESS · POUR MORE</div>
+    </div></div>
+    :<div className="body">
+      <div className={'nav'+(navOpen?' open':'')} onClick={()=>setNavOpen(false)}>
+        {NAV.map((n,x)=>n.g?<div className="grp" key={'g'+x}>{n.g}</div>:<a key={n.k} className={tab===n.k?'act':''} onClick={()=>setTab(n.k)}><Icon n={n.i} s={18}/>{n.n}{n.badge?<span className="bdg">{n.badge}</span>:null}</a>)}
+      </div>
+      <div className="main">
+        <div className="head"><h1>{TITLES[tab][0]}</h1><div className="meta">{active.meta.name}{active.meta.jobNumber?' · JOB '+active.meta.jobNumber:''}{TITLES[tab][1]?' · '+TITLES[tab][1]:''} — {TITLES[tab][2]}</div></div>
+        {tab==='dash'&&<Dashboard project={active} go={setTab}/>}
+        {tab==='takeoff'&&<Takeoff project={active} setItems={setTakeoffItems} toast={toast}/>}
+        {tab==='reshore'&&<Reshore onSave={saveRun} onTakeoff={addTakeoff}/>}
+        {tab==='formwork'&&<Formwork onSave={saveRun} onTakeoff={addTakeoff}/>}
+        {tab==='pump'&&<Pump onSave={saveRun} onTakeoff={addTakeoff}/>}
+        {tab==='rebar'&&<RebarCrane onSave={saveRun} onTakeoff={addTakeoff}/>}
+      </div>
+    </div>}
+
+    {modal&&<ProjectModal onClose={()=>setModal(false)} onCreate={createProject}/>}
+    {active&&<Alfred tab={tab}/>}
+    {toastMsg&&<Toast msg={toastMsg}/>}
+  </div>;
+}
+function Toast({msg}){
+  const ref=useRef(null);
+  useEffect(()=>{ if(MO&&ref.current) MO.animate(ref.current,{opacity:[0,1],transform:['translate(-50%,10px)','translate(-50%,0)']},{duration:.18,easing:'ease-out'}); },[]);
+  return <div className="toast" ref={ref}><Icon n="check" s={16}/>{msg}</div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
