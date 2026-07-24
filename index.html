@@ -370,6 +370,29 @@ function calcCrane(i){
   const front=V/4-Mnr/(2*i.dl), rear=V/4+Mnr/(2*i.dl), maxLoad=Math.max(front,rear), padArea=i.padW*i.padL, bearing=padArea>0?maxLoad/padArea:0, padOK=i.allowBearing>0?bearing<=i.allowBearing:null;
   return {Mboom,Mu,Vu,Mnr,V,front,rear,maxLoad,bearing,padArea,padOK};
 }
+const DENSITY={Concrete:150,Steel:490,Rebar:490,Water:62.4,'Soil (damp)':100,Gravel:105,Sand:100,Asphalt:145,Aluminum:168,'Lumber (DF)':35};
+function calcConcrete(i){
+  const t=i.thick/12; let cy=0,contact=0;
+  if(i.element==='slab'||i.element==='mat'){cy=i.L*i.W*t/27;contact=i.L*i.W;}
+  else if(i.element==='wall'){cy=i.L*i.H*t/27;contact=i.L*i.H*2;}
+  else if(i.element==='colRect'){cy=(i.cw/12)*(i.cd/12)*i.H*i.count/27;contact=2*((i.cw+i.cd)/12)*i.H*i.count;}
+  else if(i.element==='colRound'){const d=i.dia/12;cy=Math.PI/4*d*d*i.H*i.count/27;contact=Math.PI*d*i.H*i.count;}
+  else if(i.element==='footing'){cy=i.L*i.W*i.depth*i.count/27;}
+  const withWaste=cy*(1+i.waste/100), trucks=i.truck>0?withWaste/i.truck:0, tons=withWaste*150*27/2000;
+  return {cy,withWaste,trucks,tons,contact};
+}
+function calcThermal(i){
+  const total=i.cement, fly=total*i.flyash/100, slag=total*i.slag/100, opc=total-fly-slag;
+  const heatEquiv=opc*1.0+fly*0.5+slag*0.75, adiabRise=heatEquiv*0.11;
+  const sizeFactor=Math.min(0.95,0.45+0.10*i.leastDim), peak=i.placeTemp+adiabRise*sizeFactor;
+  const dTsurface=Math.max(peak-i.ambient,0), defOK=peak<=160, dtOK=dTsurface<=i.maxDT;
+  return {opc,fly,slag,heatEquiv,adiabRise,sizeFactor,peak,dTsurface,defOK,dtOK,ok:defOK&&dtOK};
+}
+function calcRigging(i){
+  const th=i.angle*Math.PI/180, s=Math.sin(th);
+  const perLeg=i.legs>0&&s>0?(i.load/i.legs)/s:0, angMult=s>0?1/s:0, horiz=perLeg*Math.cos(th), angleOK=i.angle>=30;
+  return {perLeg,angMult,horiz,angleOK};
+}
 
 /* ═══════════ HELPERS ═══════════ */
 const uid=(p)=>(p||'')+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -387,7 +410,8 @@ const P={
   spark:'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z', download:'M12 3v12M7 10l5 5 5-5M4 19h16',
   grid:'M4 6h16M4 12h16M4 18h16M8 4v16M16 4v16', layers:'M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
   x:'M18 6 6 18M6 6l12 12', sun:'M12 3v2M12 19v2M5 12H3M21 12h-2M6 6l1.5 1.5M16.5 16.5 18 18M18 6l-1.5 1.5M7.5 16.5 6 18',
-  moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z', printer:'M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z', file:'M14 3H6v18h12V8z'
+  moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z', printer:'M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z', file:'M14 3H6v18h12V8z',
+  box:'M12 3 3 7.5v9l9 4.5 9-4.5v-9zM3 7.5l9 4.5 9-4.5M12 12v9', thermo:'M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0z', hook:'M12 22V8M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M5 12H2a10 10 0 0 0 20 0h-3'
 };
 function Icon({n,s=18,c}){
   const extra=[];
@@ -610,8 +634,159 @@ function Pump({onSave,onTakeoff}){
 function RebarCrane({onSave,onTakeoff}){
   const [tab,setTab]=useState('rebar');
   return <div>
-    <div style={{marginBottom:18,maxWidth:340}}><Seg opts={[{v:'rebar',l:'Rebar lap/dev'},{v:'crane',l:'Crane outrigger'}]} value={tab} onChange={setTab}/></div>
-    {tab==='rebar'?<RebarTab onSave={onSave} onTakeoff={onTakeoff}/>:<CraneTab onSave={onSave} onTakeoff={onTakeoff}/>}
+    <div style={{marginBottom:18,maxWidth:460}}><Seg opts={[{v:'rebar',l:'Lap / dev'},{v:'sched',l:'Bar schedule'},{v:'crane',l:'Crane'}]} value={tab} onChange={setTab}/></div>
+    {tab==='rebar'&&<RebarTab onSave={onSave} onTakeoff={onTakeoff}/>}
+    {tab==='sched'&&<BarSchedule onTakeoff={onTakeoff}/>}
+    {tab==='crane'&&<CraneTab onSave={onSave} onTakeoff={onTakeoff}/>}
+  </div>;
+}
+function BarSchedule({onTakeoff}){
+  const [rows,setRows]=useState([{id:uid('b'),bar:'#5',len:20,count:10},{id:uid('b'),bar:'#8',len:40,count:24}]);
+  const upd=(id,p)=>setRows(rs=>rs.map(r=>r.id===id?{...r,...p}:r));
+  const add=()=>setRows(rs=>[...rs,{id:uid('b'),bar:'#5',len:20,count:1}]);
+  const del=(id)=>setRows(rs=>rs.filter(r=>r.id!==id));
+  const wt=(r)=>(parseFloat(r.count)||0)*(parseFloat(r.len)||0)*BAR[r.bar].w;
+  const total=rows.reduce((s,r)=>s+wt(r),0);
+  const items=[{category:'Rebar',desc:'Bar schedule — '+rows.length+' marks',qty:round(total,0),unit:'LBS'}];
+  return <Frame className="card" style={{maxWidth:760}}>
+    <h3>Bar schedule</h3><p className="ch">size × length × count → weight → takeoff</p>
+    <div className="tw" style={{border:'1px solid var(--line)'}}><table className="vt">
+      <thead><tr><th style={{textAlign:'left'}}>Size</th><th>Length ft</th><th>Count</th><th>lb/ft</th><th>Weight lb</th><th></th></tr></thead>
+      <tbody>{rows.map(r=><tr key={r.id}>
+        <td style={{textAlign:'left'}}><select className="f-sel" style={{minHeight:38,width:78}} value={r.bar} onChange={e=>upd(r.id,{bar:e.target.value})}>{BARS.map(b=><option key={b}>{b}</option>)}</select></td>
+        <td><input className="tk-in num" type="number" inputMode="decimal" value={r.len} onChange={e=>upd(r.id,{len:e.target.value})}/></td>
+        <td><input className="tk-in num" type="number" inputMode="decimal" value={r.count} onChange={e=>upd(r.id,{count:e.target.value})}/></td>
+        <td>{BAR[r.bar].w}</td>
+        <td style={{color:'var(--ok-ink)'}}>{num(wt(r),0)}</td>
+        <td style={{textAlign:'right'}}><button className="tk-x" onClick={()=>del(r.id)}>×</button></td>
+      </tr>)}</tbody></table></div>
+    <div style={{display:'flex',alignItems:'center',gap:12,marginTop:12,flexWrap:'wrap'}}>
+      <button className="b sec" onClick={add}><Icon n="plus" s={16}/>Add mark</button><span style={{flex:1}}/>
+      <span className="r-kick">Total steel</span>
+      <span style={{fontFamily:'var(--mo)',fontWeight:700,fontSize:22,color:'var(--ok-ink)'}}>{num(total,0)} lb</span>
+      <span className="mono" style={{color:'var(--mut)',fontSize:12}}>{round(total/2000,2)} t</span>
+    </div>
+    <div className="r-act"><button className="b ok" style={{marginLeft:'auto'}} onClick={()=>onTakeoff(items)} disabled={!(total>0)}><Icon n="check" s={16}/>Add to takeoff</button></div>
+  </Frame>;
+}
+
+/* ═══════════ CALC: CONCRETE VOLUME ═══════════ */
+function ConcreteCalc({onSave,onTakeoff}){
+  const [i,set]=useState({element:'slab',L:40,W:30,H:10,thick:8,cw:24,cd:24,dia:24,depth:2,count:1,waste:5,truck:10});
+  const u=(k)=>(v)=>set(s=>({...s,[k]:v})); const r=useMemo(()=>calcConcrete(i),[i]); const el=i.element;
+  const label={slab:'Slab',mat:'Mat',wall:'Wall',colRect:'Rect column',colRound:'Round column',footing:'Footing'}[el];
+  const items=[{category:'Concrete',desc:label+' concrete'+(i.count>1?' ×'+i.count:''),qty:round(r.withWaste,2),unit:'CY'}];
+  return <div className="split">
+    <div><p className="kick acc">Inputs</p>
+      <Frame className="card"><h3>Concrete volume</h3><p className="ch">neat + waste → takeoff CY</p>
+        <div style={{marginBottom:12}}><span className="field-lbl">Element</span>
+          <Seg opts={[{v:'slab',l:'Slab'},{v:'wall',l:'Wall'},{v:'colRect',l:'Col ▭'},{v:'colRound',l:'Col ●'},{v:'footing',l:'Ftg'},{v:'mat',l:'Mat'}]} value={el} onChange={u('element')}/></div>
+        <div className="g2">
+          {(el==='slab'||el==='mat'||el==='footing'||el==='wall')&&<In label="Length" unit="ft" value={i.L} onChange={u('L')}/>}
+          {(el==='slab'||el==='mat'||el==='footing')&&<In label="Width" unit="ft" value={i.W} onChange={u('W')}/>}
+          {(el==='wall'||el==='colRect'||el==='colRound')&&<In label="Height" unit="ft" value={i.H} onChange={u('H')}/>}
+          {(el==='slab'||el==='mat'||el==='wall')&&<In label="Thickness" unit="in" value={i.thick} onChange={u('thick')}/>}
+          {el==='colRect'&&<In label="Col width" unit="in" value={i.cw} onChange={u('cw')}/>}
+          {el==='colRect'&&<In label="Col depth" unit="in" value={i.cd} onChange={u('cd')}/>}
+          {el==='colRound'&&<In label="Diameter" unit="in" value={i.dia} onChange={u('dia')}/>}
+          {el==='footing'&&<In label="Depth" unit="ft" value={i.depth} onChange={u('depth')}/>}
+          {(el==='colRect'||el==='colRound'||el==='footing')&&<In label="Count" unit="EA" value={i.count} onChange={u('count')}/>}
+          <In label="Waste" unit="%" value={i.waste} onChange={u('waste')}/>
+          <In label="Truck size" unit="CY" value={i.truck} onChange={u('truck')}/>
+        </div>
+      </Frame>
+    </div>
+    <div><p className="kick acc">Result</p>
+      <ResultCard kick="Order volume (with waste)" n={r.withWaste} dp={2} u="CY" tone="ok">
+        <RR k="Neat volume" v={round(r.cy,2)} u="cy"/>
+        <RR k="Waste allowance" v={i.waste} u="%"/>
+        <RR k="Truck loads" v={round(r.trucks,1)} u="loads"/>
+        <RR k="Concrete weight" v={round(r.tons,1)} u="tons"/>
+        {r.contact>0&&<RR k="Form contact area" v={num(r.contact,0)} u="sf"/>}
+        <div className="r-act">
+          <button className="b sec" onClick={()=>onSave('concrete',label+' '+round(r.withWaste,1)+'cy',i,r)}>Save run</button>
+          <button className="b ok" onClick={()=>onTakeoff(items)} disabled={!(r.withWaste>0)}><Icon n="check" s={16}/>Add to takeoff</button>
+        </div>
+      </ResultCard>
+      <div className="note"><b>Tip:</b> order volume includes your waste %. Where shown, form contact area can seed a Formwork takeoff line.</div>
+    </div>
+  </div>;
+}
+
+/* ═══════════ CALC: MASS CONCRETE THERMAL ═══════════ */
+function Thermal({onSave}){
+  const [i,set]=useState({cement:600,flyash:20,slag:0,placeTemp:70,ambient:60,leastDim:4,maxDT:35});
+  const u=(k)=>(v)=>set(s=>({...s,[k]:v})); const r=useMemo(()=>calcThermal(i),[i]);
+  return <div className="split">
+    <div><p className="kick acc">Inputs</p>
+      <Frame className="card"><h3>Mass concrete thermal</h3><p className="ch">planning estimate · ACI 207</p>
+        <div className="g2">
+          <In label="Cementitious" unit="lb/cy" value={i.cement} onChange={u('cement')}/>
+          <In label="Least dimension" unit="ft" value={i.leastDim} onChange={u('leastDim')}/>
+          <In label="Fly ash" unit="%" value={i.flyash} onChange={u('flyash')}/>
+          <In label="Slag" unit="%" value={i.slag} onChange={u('slag')}/>
+          <In label="Placement temp" unit="°F" value={i.placeTemp} onChange={u('placeTemp')}/>
+          <In label="Ambient temp" unit="°F" value={i.ambient} onChange={u('ambient')}/>
+          <In label="Max allow ΔT" unit="°F" value={i.maxDT} onChange={u('maxDT')}/>
+        </div>
+      </Frame>
+    </div>
+    <div><p className="kick acc">Result</p>
+      <ResultCard kick="Estimated peak temperature" n={r.peak} u="°F" tone={r.defOK?'':'bad'}>
+        <RR k="Adiabatic temp rise" v={round(r.adiabRise,0)} u="°F"/>
+        <RR k="Heat-equiv cement" v={num(r.heatEquiv,0)} u="lb/cy"/>
+        <RR k="Size factor" v={round(r.sizeFactor,2)}/>
+        <RR k="Est center-surface ΔT" v={round(r.dTsurface,0)} u="°F"/>
+        <RR k="Peak vs 160°F (DEF)" v={r.defOK?'OK':'OVER'}/>
+        <div className="r-act"><button className="b sec block" onClick={()=>onSave('thermal','Mass conc '+round(r.peak,0)+'°F',i,r)}>Save run</button></div>
+      </ResultCard>
+      <div className={'callout '+(r.ok?'ok':'bad')} style={{marginTop:14}}>
+        <Icon n={r.ok?'check':'x'} s={18}/>
+        <div><div className="ct">{r.ok?'Within limits':(!r.defOK?'Peak over 160°F':'ΔT over limit')}</div>
+        <div className="cb">{r.ok?'Peak below 160°F and ΔT within your limit — standard curing.':(!r.defOK?'DEF risk — precool aggregate/water, cut cement, or add SCMs.':('Center-surface gradient over '+i.maxDT+'°F — insulate with blankets and stage the blanket pull.'))}</div></div>
+      </div>
+      <div className="note"><b>Estimate only:</b> adiabatic-rise approximation (ACI 207), not a full Schindler/FE model. Confirm with the mix supplier and pair with your live SmartRock monitor for blanket-pull timing.</div>
+    </div>
+  </div>;
+}
+
+/* ═══════════ CALC: RIGGING ═══════════ */
+function Rigging({onSave}){
+  const [i,set]=useState({load:20000,legs:2,angle:60,material:'Concrete',volume:0});
+  const u=(k)=>(v)=>set(s=>({...s,[k]:v})); const r=useMemo(()=>calcRigging(i),[i]);
+  const matWt=i.volume>0?i.volume*DENSITY[i.material]:0;
+  return <div className="split">
+    <div><p className="kick acc">Inputs</p>
+      <Frame className="card"><h3>Sling loads</h3><p className="ch">tension per leg by angle</p>
+        <div className="g2">
+          <In label="Load weight" unit="lb" value={i.load} onChange={u('load')}/>
+          <In label="Sling angle" unit="° horiz" value={i.angle} onChange={u('angle')}/>
+        </div>
+        <div style={{marginTop:6}}><span className="field-lbl">Sharing legs</span><Seg mono opts={[1,2,3,4]} value={i.legs} onChange={u('legs')}/></div>
+        <p className="ch" style={{marginTop:8}}>4-leg lifts: use 3 — loads rarely share evenly</p>
+      </Frame>
+      <Frame className="card"><h3>Load estimator <span style={{fontFamily:'var(--mo)',fontSize:9,color:'var(--mut)',fontWeight:400}}>OPTIONAL</span></h3>
+        <div className="g2">
+          <div><span className="field-lbl">Material</span><select className="f-sel" value={i.material} onChange={e=>u('material')(e.target.value)}>{Object.keys(DENSITY).map(m=><option key={m}>{m}</option>)}</select></div>
+          <In label="Volume" unit="ft³" value={i.volume} onChange={u('volume')}/>
+        </div>
+        {matWt>0&&<div className="note" style={{marginTop:12,display:'flex',alignItems:'center',gap:10}}><span>≈ <b style={{color:'var(--ink)'}}>{num(matWt,0)} lb</b> at {DENSITY[i.material]} pcf</span><button className="b sec" style={{marginLeft:'auto',minHeight:36,padding:'0 12px'}} onClick={()=>u('load')(round(matWt,0))}>Use as load</button></div>}
+      </Frame>
+    </div>
+    <div><p className="kick acc">Result</p>
+      <ResultCard kick="Tension per sling leg" n={r.perLeg} u="lbs" tone={r.angleOK?'':'bad'}>
+        <RR k="Load angle multiplier" v={round(r.angMult,2)} u="×"/>
+        <RR k="Horizontal force / leg" v={num(r.horiz,0)} u="lbs"/>
+        <RR k="Sharing legs" v={i.legs}/>
+        <RR k="Sling angle" v={i.angle} u="° horiz"/>
+        <div className="r-act"><button className="b sec block" onClick={()=>onSave('rigging','Rig '+num(i.load,0)+'lb @ '+i.angle+'°',i,r)}>Save run</button></div>
+      </ResultCard>
+      <div className={'callout '+(r.angleOK?'ok':'bad')} style={{marginTop:14}}>
+        <Icon n={r.angleOK?'check':'x'} s={18}/>
+        <div><div className="ct">{r.angleOK?'Angle OK':'Angle too shallow'}</div>
+        <div className="cb">{r.angleOK?'At or above 30° from horizontal — verify each sling & hardware rating against the per-leg tension.':'Below 30° the leg tension spikes — steepen the slings or use a spreader bar.'}</div></div>
+      </div>
+    </div>
   </div>;
 }
 function RebarTab({onSave,onTakeoff}){
@@ -704,7 +879,7 @@ function Dashboard({project,go}){
   const runs=project.runs?Object.values(project.runs):[]; const items=project.takeoff&&project.takeoff.items?Object.values(project.takeoff.items):[];
   const est=items.reduce((s,it)=>s+(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),0);
   const byType={}; runs.forEach(r=>{byType[r.type]=(byType[r.type]||0)+1;});
-  const tiles=[{k:'formwork',n:'Form pressure',i:'gauge',h:'psf · pcf · °F · ft/hr'},{k:'reshore',n:'Reshore stack',i:'layers',h:'psf · lvl · f\'c'},{k:'rebar',n:'Rebar & crane',i:'grid',h:'ACI 318 · lb'},{k:'pump',n:'Pour & pump',i:'gauge',h:'bar · cy/hr'}];
+  const tiles=[{k:'concrete',n:'Concrete volume',i:'box',h:'CY · waste · trucks'},{k:'formwork',n:'Form pressure',i:'gauge',h:'psf · ACI 347'},{k:'reshore',n:'Reshore stack',i:'layers',h:'psf · lvl · f\'c'},{k:'pump',n:'Pour & pump',i:'gauge',h:'bar · cy/hr'},{k:'rebar',n:'Rebar & crane',i:'grid',h:'lap · wt · outrigger'},{k:'thermal',n:'Mass thermal',i:'thermo',h:'°F · ΔT · peak'},{k:'rigging',n:'Rigging loads',i:'hook',h:'sling · angle · lb'}];
   const gref=useStagger();
   return <div ref={gref}>
     <div className="g2" style={{marginBottom:18}}>
@@ -844,10 +1019,12 @@ function App(){
   const setTakeoffItems=(m)=>{ if(!active) return; writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); };
 
   const NAV=[{g:'PROJECT'},{k:'dash',n:'Dashboard',i:'grid'},{k:'takeoff',n:'Takeoff',i:'file',badge:active&&active.takeoff&&active.takeoff.items?Object.keys(active.takeoff.items).length:0},
-    {g:'CALCULATORS'},{k:'formwork',n:'Formwork',i:'gauge'},{k:'reshore',n:'Reshore',i:'layers'},{k:'pump',n:'Concrete Pump',i:'gauge'},{k:'rebar',n:'Rebar + Crane',i:'grid'}];
+    {g:'CALCULATORS'},{k:'concrete',n:'Concrete',i:'box'},{k:'formwork',n:'Formwork',i:'gauge'},{k:'reshore',n:'Reshore',i:'layers'},{k:'pump',n:'Concrete Pump',i:'gauge'},{k:'rebar',n:'Rebar + Crane',i:'grid'},{k:'thermal',n:'Mass Thermal',i:'thermo'},{k:'rigging',n:'Rigging',i:'hook'}];
   const TITLES={dash:['Dashboard','','project overview & calc runs'],takeoff:['Takeoff','','aggregate quantities → export'],
+    concrete:['Concrete Volume','','pours → takeoff CY'],
     reshore:['Reshore / Backshore','ACI 209 · SIMPLIFIED','multi-level construction load capacity'],formwork:['Formwork Pressure','ACI 347','lateral form pressure'],
-    pump:['Concrete Pump','PUTZMEISTER','pressure, output & washout'],rebar:['Rebar + Crane','ACI 318-14','lap/dev · outrigger loads']};
+    pump:['Concrete Pump','PUTZMEISTER','pressure, output & washout'],rebar:['Rebar + Crane','ACI 318-14','lap/dev · schedule · outrigger'],
+    thermal:['Mass Concrete Thermal','ACI 207','peak temp & ΔT estimate'],rigging:['Rigging & Lift','','sling tension by angle']};
 
   return <div className="app">
     <div className="topbar">
@@ -871,7 +1048,7 @@ function App(){
         <p className="kick">On this device</p>
         <div style={{display:'flex',flexDirection:'column',gap:10}}>{projects.map(p=><button key={p.id} onClick={()=>selectProject(p.id)}><Frame className="proj-card"><div><div className="pn">{p.meta.name}</div><div className="pm">JOB {p.meta.jobNumber||'—'} · {p.meta.location||'—'}</div></div><Icon n="chevron" s={18} c="var(--mut)"/></Frame></button>)}</div>
       </div>}
-      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.1 — YAP LESS · POUR MORE</div>
+      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.2 — YAP LESS · POUR MORE</div>
     </div></div>
     :<div className="body">
       <div className={'nav'+(navOpen?' open':'')} onClick={()=>setNavOpen(false)}>
@@ -881,10 +1058,13 @@ function App(){
         <div className="head"><h1>{TITLES[tab][0]}</h1><div className="meta">{active.meta.name}{active.meta.jobNumber?' · JOB '+active.meta.jobNumber:''}{TITLES[tab][1]?' · '+TITLES[tab][1]:''} — {TITLES[tab][2]}</div></div>
         {tab==='dash'&&<Dashboard project={active} go={setTab}/>}
         {tab==='takeoff'&&<Takeoff project={active} setItems={setTakeoffItems} toast={toast}/>}
+        {tab==='concrete'&&<ConcreteCalc onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='reshore'&&<Reshore onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='formwork'&&<Formwork onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='pump'&&<Pump onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='rebar'&&<RebarCrane onSave={saveRun} onTakeoff={addTakeoff}/>}
+        {tab==='thermal'&&<Thermal onSave={saveRun}/>}
+        {tab==='rigging'&&<Rigging onSave={saveRun}/>}
       </div>
     </div>}
 
