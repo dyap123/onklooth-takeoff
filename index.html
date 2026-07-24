@@ -96,6 +96,10 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 .f-val{width:100%;background:none;border:none;color:var(--ink);font-family:var(--mo);font-size:17px;padding:2px 0;caret-color:var(--accent)}
 .f-val:focus{outline:none}
 .f-unit{display:flex;align-items:center;padding:0 12px;border-left:1px solid var(--line);font-family:var(--mo);font-size:11px;color:var(--mut);flex:none}
+.f-wrap{display:flex;flex-direction:column;min-width:0}
+.f-info{margin-top:5px;font-family:var(--mo);font-size:10px;line-height:1.5;letter-spacing:.01em;color:var(--mut);border-left:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent);padding:5px 9px}
+.cat-info{font-family:var(--mo);font-size:10px;letter-spacing:.02em;color:var(--mut);padding:6px 12px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--accent) 4%,transparent)}
+.b.icon.on{background:var(--accent);border-color:var(--accent);color:var(--on-solid)}
 .f-sel{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);min-height:54px;padding:0 12px;font-family:var(--bd);font-size:14px;border-radius:0}
 .field-lbl{display:block;font-family:var(--mo);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
 
@@ -320,8 +324,9 @@ window.addEventListener('error',function(e){var r=document.getElementById('root'
 </script>
 
 <script type="text/babel" data-presets="react">
-const {useState,useEffect,useRef,useMemo,useCallback} = React;
+const {useState,useEffect,useRef,useMemo,useCallback,useContext} = React;
 const MO = window.Motion || null;
+const RookieCtx = React.createContext(false);
 
 /* ═══════════ ENGINEERING DATA (embedded from the Drive Excel calculators) ═══════════ */
 const BAR={'#3':{db:0.375,A:0.11,w:0.376},'#4':{db:0.5,A:0.20,w:0.668},'#5':{db:0.625,A:0.31,w:1.043},'#6':{db:0.75,A:0.44,w:1.502},'#7':{db:0.875,A:0.60,w:2.044},'#8':{db:1.0,A:0.79,w:2.670},'#9':{db:1.128,A:1.00,w:3.400},'#10':{db:1.27,A:1.27,w:4.303},'#11':{db:1.41,A:1.56,w:5.313}};
@@ -411,7 +416,8 @@ const P={
   grid:'M4 6h16M4 12h16M4 18h16M8 4v16M16 4v16', layers:'M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
   x:'M18 6 6 18M6 6l12 12', sun:'M12 3v2M12 19v2M5 12H3M21 12h-2M6 6l1.5 1.5M16.5 16.5 18 18M18 6l-1.5 1.5M7.5 16.5 6 18',
   moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z', printer:'M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z', file:'M14 3H6v18h12V8z',
-  box:'M12 3 3 7.5v9l9 4.5 9-4.5v-9zM3 7.5l9 4.5 9-4.5M12 12v9', thermo:'M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0z', hook:'M12 22V8M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M5 12H2a10 10 0 0 0 20 0h-3'
+  box:'M12 3 3 7.5v9l9 4.5 9-4.5v-9zM3 7.5l9 4.5 9-4.5M12 12v9', thermo:'M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0z', hook:'M12 22V8M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M5 12H2a10 10 0 0 0 20 0h-3',
+  grad:'M22 10 12 5 2 10l10 5 10-5zM6 12v5c3 2 9 2 12 0v-5M22 10v6', tag:'M12 2 2 12l10 10 10-10zM12 7v10M8 12h8'
 };
 function Icon({n,s=18,c}){
   const extra=[];
@@ -450,13 +456,104 @@ function Frame({className='',children,el='div',...rest}){
   const Cmp=el; return <Cmp className={'frame '+className} {...rest}><Corners/>{children}</Cmp>;
 }
 function Mark({size='s34'}){ return <span className={'mark '+size}>OK</span>; }
+const INFO={
+ 'Slab thickness':'Structural slab depth. Sets slab dead load (t⁄12 × unit wt). Typical 8–14 in.',
+ 'Unit weight':'Concrete density. Normal-weight ≈ 145–150 pcf; lightweight ≈ 110–120.',
+ 'Reinf & misc DL':'Superimposed dead load — rebar + misc. Typical ~10 psf.',
+ 'MEPS DL':'Mech/elec/plumbing + ceiling allowance. See structural loading plan; ~10–20 psf.',
+ 'Shore load':'Weight of the shoring carried below. ~5 psf.',
+ 'Reshore load':'Weight of reshore posts left in place. ~5 psf.',
+ 'Design LL':'In-service live load (ASCE 7-10 Tbl 4-1). Office 50, residential 40, public 100 psf.',
+ 'Construction LL':'Temporary construction live load. ACI 347 min 50 psf; often 30–75.',
+ 'Spacing N-S':'Reshore post spacing N–S. Tighter grid = more posts, lower post load.',
+ 'Spacing E-W':'Reshore post spacing E–W. Bay area = N-S × E-W.',
+ "f'c @ 28d":'Specified 28-day strength (psi). Drives the strength-gain curve.',
+ 'Days / cycle':'Days between pours (floor cycle). Sets concrete age at each level.',
+ '# levels':'Number of reshore/backshore levels under the fresh pour.',
+ 'Shored area':'Total floor area on shores — used for post count & takeoff.',
+ 'Pour rate R':'Rate concrete rises in the form (ft/hr). Governs ACI 347 pressure — faster = higher.',
+ 'Concrete temp T':'Concrete temp at placement (°F). Lower temp = higher form pressure.',
+ 'Form height h':'Total form height (ft). Full-liquid head = unit wt × h.',
+ 'Cw weight coef':'ACI 347 unit-weight coef. 1.0 for normal-weight (140–150 pcf).',
+ 'Cc chem coef':'ACI 347 chemistry coef. 1.0 Type I–III no retarder; up to 1.4 with retarders/SCMs.',
+ 'Tie spc H':'Horizontal form-tie spacing (ft). Tie load = pressure × H × V.',
+ 'Tie spc V':'Vertical form-tie spacing (ft).',
+ 'Form length':'Length of the form run (ft) — for contact area & tie count.',
+ 'Pump height':'Vertical pumping rise (ft). Adds ~0.25 bar per metre.',
+ 'Total line length':'Total pipeline length (ft). Adds ~0.05 bar per metre.',
+ '90° elbows':'Count of 90° elbows — ~1 bar each.',
+ '45° elbows':'Count of 45° elbows — ~0.5 bar each.',
+ 'Pipe couplings':'Number of pipe couplings — ~0.1 bar each.',
+ 'End hoses (5m)':'Number of 5 m end hoses — ~2 bar each.',
+ 'Safety factor':'Pressure safety margin (%). 50% is a common field allowance.',
+ 'Pump power':'Pump hydraulic power (kW). Output = 25 × kW ÷ pressure.',
+ 'Pipe dia':'Pipeline inside diameter (in). Larger = lower pressure, more washout.',
+ 'Total length (for weight)':'Total linear feet of this bar — × unit weight = pounds.',
+ 'Carrier wt Wc':'Crane carrier (lower) weight (lb) — from the load chart.',
+ 'Upperworks Wu':'Rotating upperworks weight (lb).',
+ 'Boom wt Wb':'Boom weight (lb).',
+ 'Pick weight':'Weight being lifted (lb), including rigging.',
+ 'Radius':'Load radius from center of rotation (ft). Bigger radius = higher outrigger load.',
+ 'Boom angle θ':'Boom angle above horizontal (°).',
+ 'Boom length':'Boom length (ft).',
+ 'Front↔rear':'Longitudinal distance between outriggers (ft).',
+ 'Outrig→axis':'Distance from outrigger to axis of rotation (ft).',
+ 'Pad width':'Crane mat/pad width (ft).',
+ 'Pad length':'Crane mat/pad length (ft).',
+ 'Allow bearing':'Allowable soil/mat bearing (psf). Compare to bearing under the pad.',
+ 'Width':'Plan width (ft).',
+ 'Length':'Plan length (ft).',
+ 'Height':'Vertical height (ft) for walls/columns.',
+ 'Thickness':'Member thickness (in) for slabs/walls/mats.',
+ 'Col width':'Rectangular column width (in).',
+ 'Col depth':'Rectangular column depth (in).',
+ 'Diameter':'Round column diameter (in).',
+ 'Depth':'Footing depth (ft).',
+ 'Count':'Number of identical elements.',
+ 'Waste':'Over-order allowance (%). Typical 3–8% for spillage/over-excavation.',
+ 'Truck size':'Ready-mix truck capacity (CY). Usually 9–11.',
+ 'Cementitious':'Total cementitious content (lb/CY) — cement + fly ash + slag. Drives heat.',
+ 'Least dimension':'Smallest member dimension (ft). ≥ ~3 ft trends toward mass concrete.',
+ 'Fly ash':'Fly ash as % of cementitious. Lowers peak heat (~50% of cement heat).',
+ 'Slag':'Slag as % of cementitious (~75% of cement heat).',
+ 'Placement temp':'Fresh concrete temp at placement (°F).',
+ 'Ambient temp':'Ambient air temp (°F).',
+ 'Max allow ΔT':'Max center-to-surface gradient (°F). ACI 207 ~35°F limits cracking.',
+ 'Load weight':'Total weight being lifted (lb).',
+ 'Sling angle':'Sling angle from horizontal (°). Below 30° tension spikes — keep steep.',
+ 'Volume':'Material volume (ft³) for the weight estimate.'
+};
+const CAT_INFO={
+ Concrete:'Cast-in-place concrete volume (CY), priced per cubic yard placed.',
+ Formwork:'Form contact area (SFCA), priced per square foot of forms.',
+ Rebar:'Reinforcing steel by weight (lb) — ≈ $/lb installed.',
+ Reshore:'Reshore / backshore posts (EA).',
+ Pump:'Concrete pumping & line washout.',
+ 'Walls & Cores':'Core & shear-wall forming and placement.',
+ Columns:'Column forming & placement.',
+ 'Deck/Slab':'Elevated deck/slab forming, shoring & placement.',
+ 'Beams & Downturns':'Beam sides & downturn forming.',
+ Embeds:'Embedded plates, anchor bolts, formsavers.',
+ 'Embeds & Anchor Bolts':'Embedded plates & anchor bolts.',
+ Finishing:'Float / trowel / cure finishing labor.',
+ Waterproofing:'Blindside / below-grade waterproofing.',
+ 'Thermal Control':'Mass-concrete cooling, blankets, monitoring.',
+ 'Base Prep':'Subgrade, vapor barrier, base rock.',
+ 'Joints/Sawcut':'Control / construction joints & sawcutting.',
+ Layout:'Survey & layout.',
+ Other:'Uncategorized lines.'
+};
 function In({label,unit,value,onChange,step}){
-  return <label className="f">
-    <span className="f-main"><span className="f-lbl">{label}</span>
-      <input className="f-val" type="number" inputMode="decimal" step={step||'any'} value={value}
-        onChange={e=>onChange(e.target.value===''?'':parseFloat(e.target.value))}/></span>
-    {unit&&<span className="f-unit">{unit}</span>}
-  </label>;
+  const rookie=useContext(RookieCtx); const info=INFO[label];
+  return <div className="f-wrap">
+    <label className="f">
+      <span className="f-main"><span className="f-lbl">{label}</span>
+        <input className="f-val" type="number" inputMode="decimal" step={step||'any'} value={value}
+          onChange={e=>onChange(e.target.value===''?'':parseFloat(e.target.value))}/></span>
+      {unit&&<span className="f-unit">{unit}</span>}
+    </label>
+    {rookie&&info&&<div className="f-info">{info}</div>}
+  </div>;
 }
 function Seg({opts,value,onChange,mono}){
   return <div className={'seg'+(mono?' mono':'')}>{opts.map(o=>{const v=o.v!==undefined?o.v:o,l=o.l!==undefined?o.l:o;
@@ -881,10 +978,12 @@ function Dashboard({project,go}){
   const byType={}; runs.forEach(r=>{byType[r.type]=(byType[r.type]||0)+1;});
   const tiles=[{k:'concrete',n:'Concrete volume',i:'box',h:'CY · waste · trucks'},{k:'formwork',n:'Form pressure',i:'gauge',h:'psf · ACI 347'},{k:'reshore',n:'Reshore stack',i:'layers',h:'psf · lvl · f\'c'},{k:'pump',n:'Pour & pump',i:'gauge',h:'bar · cy/hr'},{k:'rebar',n:'Rebar & crane',i:'grid',h:'lap · wt · outrigger'},{k:'thermal',n:'Mass thermal',i:'thermo',h:'°F · ΔT · peak'},{k:'rigging',n:'Rigging loads',i:'hook',h:'sling · angle · lb'}];
   const gref=useStagger();
+  const scope=SCOPES[project.meta.scope]||SCOPES.tower;
   return <div ref={gref}>
+    <div style={{marginBottom:14}}><span className="vp clear" style={{fontSize:10}}>{scope.name} SCOPE</span></div>
     <div className="g2" style={{marginBottom:18}}>
       <div data-st><Frame className="stat"><div className="sk">Saved runs</div><div className="sv">{runs.length}</div></Frame></div>
-      <div data-st><Frame className="stat"><div className="sk">Takeoff items</div><div className="sv">{items.length}</div>{est>0&&<div className="ss">≈ ${num(est,0)}</div>}</Frame></div>
+      <div data-st><Frame className="stat"><div className="sk">Estimate budget</div><div className="sv">${num(est,0)}</div><div className="ss">{items.length} lines</div></Frame></div>
     </div>
     <p className="kick">Calculators</p>
     <div className="g2">{tiles.map(t=><button key={t.k} data-st onClick={()=>go(t.k)}><Frame className="tile"><Icon n={t.i} s={22}/><div className="tt">{t.n}{byType[t.k]?<span className="vp clear" style={{marginLeft:8,fontSize:9}}>{byType[t.k]}</span>:null}</div><div className="th">{t.h}</div></Frame></button>)}</div>
@@ -892,24 +991,39 @@ function Dashboard({project,go}){
       <p className="kick">Recent runs</p>
       <div className="rlist">{runs.slice().reverse().slice(0,6).map(r=><div className="ri" key={r.id}><span className="vp clear" style={{fontSize:9}}>{r.type}</span><span className="rn">{r.label}</span><span className="rt">{r.date}</span></div>)}</div>
     </div>}
-    <div style={{marginTop:22}}><button className="b pri big block" onClick={()=>go('takeoff')}>Build the takeoff<Icon n="arrowRight" s={18}/></button></div>
+    <div style={{marginTop:22}}><button className="b pri big block" onClick={()=>go('takeoff')}>Build the estimate<Icon n="arrowRight" s={18}/></button></div>
   </div>;
 }
 
 /* ═══════════ TAKEOFF ═══════════ */
 const CATS=['Concrete','Formwork','Reshore','Rebar','Pump','Other'];
-function Takeoff({project,setItems,toast}){
+// Job-scope templates → category sets (every scope includes the 5 calculator-fed categories)
+const SCOPES={
+ tower:{name:'Tower / Vertical',cats:['Columns','Walls & Cores','Deck/Slab','Formwork','Reshore','Rebar','Concrete','Pump','Embeds','Finishing','Other']},
+ podium:{name:'Podium / Deck',cats:['Deck/Slab','Beams & Downturns','Formwork','Reshore','Rebar','Concrete','Pump','Embeds','Finishing','Columns','Walls & Cores','Other']},
+ foundation:{name:'Foundation / Mat',cats:['Concrete','Rebar','Formwork','Embeds & Anchor Bolts','Waterproofing','Pump','Reshore','Thermal Control','Finishing','Other']},
+ flatwork:{name:'Flatwork / SOG',cats:['Concrete','Rebar','Formwork','Base Prep','Finishing','Joints/Sawcut','Pump','Reshore','Layout','Other']}
+};
+const SCOPEKEYS=Object.keys(SCOPES);
+// Editable default rate book (all-in self-perform unit costs — placeholders, editable in the Rate Book)
+const RATES={Concrete:{CY:210},Formwork:{SF:11},Rebar:{LBS:1.25},Reshore:{EA:85},Pump:{CY:210,LF:0},Embeds:{EA:45},Finishing:{SF:2.5},_unit:{CY:210,SF:11,LBS:1.25,EA:50,LF:0,TON:2500}};
+const RATE_ROWS=[{cat:'Concrete',unit:'CY',label:'Concrete — placed'},{cat:'Formwork',unit:'SF',label:'Formwork (SFCA)'},{cat:'Rebar',unit:'LBS',label:'Rebar — installed'},{cat:'Reshore',unit:'EA',label:'Reshore post'},{cat:'Pump',unit:'CY',label:'Pumping / washout'},{cat:'Embeds',unit:'EA',label:'Embeds'},{cat:'Finishing',unit:'SF',label:'Finishing'}];
+function rateFor(rates,cat,unit){ const R=rates||RATES; if(R[cat]&&R[cat][unit]!==undefined) return R[cat][unit]; if(R._unit&&R._unit[unit]!==undefined) return R._unit[unit]; return 0; }
+function Takeoff({project,setItems,toast,rates,saveRates}){
+  const rookie=useContext(RookieCtx); const [showRates,setShowRates]=useState(false);
   const items=project.takeoff&&project.takeoff.items?Object.values(project.takeoff.items):[];
   const map=()=>({...(project.takeoff&&project.takeoff.items||{})});
   const upd=(id,patch)=>{const m=map();m[id]={...m[id],...patch};setItems(m);};
   const del=(id)=>{const m=map();delete m[id];setItems(m);};
-  const add=(cat)=>{const id=uid('t');const m=map();m[id]={id,category:cat||'Other',desc:'',qty:0,unit:'EA',rate:0};setItems(m);};
+  const add=(cat)=>{const id=uid('t');const m=map();m[id]={id,category:cat||'Other',desc:'',qty:0,unit:'EA',rate:rateFor(rates,cat||'Other','EA')};setItems(m);};
+  const scope=SCOPES[project.meta.scope]||SCOPES.tower;
   const grouped={}; items.forEach(it=>{(grouped[it.category]=grouped[it.category]||[]).push(it);});
+  const cats=scope.cats.concat(Object.keys(grouped).filter(c=>scope.cats.indexOf(c)<0));
   const grand=items.reduce((s,it)=>s+(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),0);
   const subtotal=(c)=>(grouped[c]||[]).reduce((s,it)=>s+(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),0);
   function exportXLSX(){ if(!window.XLSX){toast('Export loading…');return;}
     const aoa=[['OnKlooth Takeoff — '+project.meta.name],['Job',project.meta.jobNumber||'','','Date',todayISO()],[],['Category','Description','Qty','Unit','Unit $','Total $']];
-    CATS.forEach(c=>(grouped[c]||[]).forEach(it=>{const t=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);aoa.push([it.category,it.desc,it.qty,it.unit,it.rate||'',t||'']);}));
+    cats.forEach(c=>(grouped[c]||[]).forEach(it=>{const t=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);aoa.push([it.category,it.desc,it.qty,it.unit,it.rate||'',t||'']);}));
     aoa.push([],['','','','','TOTAL',grand]); const ws=XLSX.utils.aoa_to_sheet(aoa),wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Takeoff');
     XLSX.writeFile(wb,'OnKloothTakeoff_'+(project.meta.name||'project').replace(/\s+/g,'_')+'_'+todayISO()+'.xlsx');
   }
@@ -918,34 +1032,55 @@ function Takeoff({project,setItems,toast}){
     doc.setTextColor(20);doc.setFontSize(15);doc.text('ONKLOOTH TAKEOFF',28,17); doc.setFontSize(8);doc.setTextColor(110);doc.setFont(undefined,'normal');
     doc.text('FIELD ENG · '+todayISO(),28,22);
     doc.setFontSize(9);doc.setTextColor(40);doc.text((project.meta.name||'')+'    JOB '+(project.meta.jobNumber||'—')+'    '+(project.meta.location||''),14,30);
-    const rows=[]; CATS.forEach(c=>(grouped[c]||[]).forEach(it=>{const t=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);rows.push([it.category,it.desc,num(it.qty,2),it.unit,it.rate?('$'+num(it.rate,2)):'',t?('$'+num(t,2)):'']);}));
+    const rows=[]; cats.forEach(c=>(grouped[c]||[]).forEach(it=>{const t=(parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);rows.push([it.category,it.desc,num(it.qty,2),it.unit,it.rate?('$'+num(it.rate,2)):'',t?('$'+num(t,2)):'']);}));
     doc.autoTable({startY:36,head:[['Category','Description','Qty','Unit','Unit $','Total $']],body:rows,styles:{fontSize:9,font:'courier'},headStyles:{fillColor:[47,128,237]},foot:[['','','','','GRAND TOTAL','$'+num(grand,2)]],footStyles:{fillColor:[79,195,65],textColor:20}});
     let y=doc.lastAutoTable.finalY+18; doc.setDrawColor(180);doc.setTextColor(120);doc.setFontSize(8);
     ['PREPARED BY','REVIEWED BY','DATE'].forEach((l,x)=>{const cx=14+x*64;doc.line(cx,y,cx+56,y);doc.text(l,cx,y+5);});
     doc.save('OnKloothTakeoff_'+(project.meta.name||'project').replace(/\s+/g,'_')+'_'+todayISO()+'.pdf');
   }
   return <div>
-    <div className="tk-tools"><button className="b sec" onClick={()=>add('Concrete')}><Icon n="plus" s={16}/>Line item</button><span className="sp"/>
+    <div className="tk-tools">
+      <span className="vp clear" style={{fontSize:10}}>{scope.name}</span>
+      <button className="b sec" onClick={()=>add('Other')}><Icon n="plus" s={16}/>Line</button>
+      <span className="sp"/>
+      <button className="b sec" onClick={()=>setShowRates(true)}><Icon n="tag" s={16}/>Rates</button>
       <button className="b sec" onClick={exportXLSX}><Icon n="file" s={16}/>XLSX</button>
-      <button className="b pri" onClick={exportPDF}><Icon n="printer" s={16}/>PDF</button></div>
-    {items.length===0?<div className="empty">No takeoff items yet. Run a calculator and hit <b>Add to takeoff</b>, or press <b>+ Line item</b>.</div>:
+      <button className="b pri" onClick={exportPDF}><Icon n="printer" s={16}/>PDF</button>
+    </div>
+    {rookie&&<div className="note" style={{marginBottom:14}}><b>Estimate:</b> categories come from the <b>{scope.name}</b> scope. Each calculator's “Add to takeoff” drops a line here, auto-priced from the <b>rate book</b> (edit inline or via Rates). Subtotals are your category budgets; the grand total is the project budget.</div>}
     <Frame className="tk">
       <div className="tk-hd"><span>Description</span><span>Qty</span><span>Unit</span><span>Unit $</span><span>Total $</span><span/></div>
-      {CATS.filter(c=>grouped[c]).map(c=><div key={c}>
-        <div className="tk-cat"><span className="cl">{c}</span><span className="cs">{subtotal(c)?('$'+num(subtotal(c),0)):(grouped[c].length+' items')}</span></div>
-        {grouped[c].map(it=><div className="tk-row" key={it.id}>
+      {cats.map(c=><div key={c}>
+        <div className="tk-cat"><span className="cl">{c}</span><span className="cs">{grouped[c]?('$'+num(subtotal(c),0)):'—'}</span><button className="tk-x" title="add line" onClick={()=>add(c)} style={{width:30,color:'var(--accent)'}}>+</button></div>
+        {rookie&&CAT_INFO[c]&&<div className="cat-info">{CAT_INFO[c]}</div>}
+        {(grouped[c]||[]).map(it=><div className="tk-row" key={it.id}>
           <div className="tk-cell"><input className="tk-in" value={it.desc} placeholder="description" onChange={e=>upd(it.id,{desc:e.target.value})}/></div>
           <div className="tk-cell"><input className="tk-in num qty" type="number" inputMode="decimal" value={it.qty} onChange={e=>upd(it.id,{qty:e.target.value})}/></div>
           <div className="tk-cell"><input className="tk-in" value={it.unit} onChange={e=>upd(it.id,{unit:e.target.value})}/></div>
-          <div className="tk-cell"><input className="tk-in num rate" type="number" inputMode="decimal" value={it.rate||''} placeholder="—" onChange={e=>upd(it.id,{rate:e.target.value})}/></div>
+          <div className="tk-cell"><input className="tk-in num rate" type="number" inputMode="decimal" value={it.rate||''} placeholder={rateFor(rates,it.category,it.unit)?('$'+rateFor(rates,it.category,it.unit)):'—'} onChange={e=>upd(it.id,{rate:e.target.value})}/></div>
           <div className="tk-tot">{((parseFloat(it.qty)||0)*(parseFloat(it.rate)||0))?('$'+num((parseFloat(it.qty)||0)*(parseFloat(it.rate)||0),2)):'—'}</div>
           <div className="tk-cell" style={{padding:0}}><button className="tk-x" onClick={()=>del(it.id)}>×</button></div>
         </div>)}
       </div>)}
-    </Frame>}
-    {items.length>0&&<div className="totbar"><div><div className="tk-lbl">Grand total</div><div className="tk-g">${num(grand,0)}</div></div>
-      <span style={{flex:1}}/><button className="b pri mid" onClick={exportPDF}><Icon n="download" s={16}/>Export sheet</button></div>}
+    </Frame>
+    <div className="totbar"><div><div className="tk-lbl">Project budget</div><div className="tk-g">${num(grand,0)}</div></div>
+      <span style={{flex:1}}/><button className="b pri mid" onClick={exportPDF}><Icon n="download" s={16}/>Export sheet</button></div>
+    {showRates&&<RateBook rates={rates} save={saveRates} onClose={()=>setShowRates(false)} toast={toast}/>}
   </div>;
+}
+function RateBook({rates,save,onClose,toast}){
+  const [r,setR]=useState(rates||RATES); const ref=useRef(null);
+  const setRate=(cat,unit,val)=>setR(p=>({...p,[cat]:{...(p[cat]||{}),[unit]:val===''?0:parseFloat(val)}}));
+  useEffect(()=>{ if(MO&&ref.current) MO.animate(ref.current,{opacity:[0,1],transform:['scale(.96)','scale(1)']},{duration:.16,easing:'ease-out'}); },[]);
+  return <div className="ov" onClick={onClose}><div className="dialog" ref={ref} onClick={e=>e.stopPropagation()} style={{maxWidth:430}}>
+    <span className="dk">Rate book</span><h3>Unit rates</h3>
+    <p className="ch" style={{margin:'-6px 0 14px'}}>editable defaults · auto-applied when you add to the estimate</p>
+    <div className="stack">{RATE_ROWS.map(rw=><label className="f" key={rw.cat+rw.unit}>
+      <span className="f-main"><span className="f-lbl">{rw.label}</span>
+        <input className="f-val" type="number" inputMode="decimal" value={(r[rw.cat]&&r[rw.cat][rw.unit])!==undefined?r[rw.cat][rw.unit]:''} onChange={e=>setRate(rw.cat,rw.unit,e.target.value)}/></span>
+      <span className="f-unit">$/{rw.unit}</span></label>)}</div>
+    <div className="dact"><button className="b sec" style={{flex:1}} onClick={onClose}>Cancel</button><button className="b ok" style={{flex:1}} onClick={()=>{save(r);onClose();toast&&toast('Rates saved');}}><Icon n="check" s={16}/>Save rates</button></div>
+  </div></div>;
 }
 
 /* ═══════════ ALFRED ═══════════ */
@@ -975,7 +1110,7 @@ function Alfred({tab}){
 
 /* ═══════════ MODAL / SYNC / THEME ═══════════ */
 function ProjectModal({onClose,onCreate}){
-  const [f,setF]=useState({name:'',jobNumber:'',location:''}); const ref=useRef(null);
+  const [f,setF]=useState({name:'',jobNumber:'',location:'',scope:'tower'}); const ref=useRef(null);
   useEffect(()=>{ if(MO&&ref.current) MO.animate(ref.current,{opacity:[0,1],transform:['scale(.96)','scale(1)']},{duration:.16,easing:'ease-out'}); },[]);
   return <div className="ov grid-bg" onClick={onClose}><div className="dialog" ref={ref} onClick={e=>e.stopPropagation()}>
     <span className="dk">New project</span><h3>Start a project</h3>
@@ -983,6 +1118,8 @@ function ProjectModal({onClose,onCreate}){
       <label className="f"><span className="f-main"><span className="f-lbl">Project name</span><input className="f-val" style={{fontFamily:'var(--bd)',fontSize:15}} autoFocus value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="Marina Shores — Bldg A"/></span></label>
       <label className="f"><span className="f-main"><span className="f-lbl">Job number</span><input className="f-val" value={f.jobNumber} onChange={e=>setF({...f,jobNumber:e.target.value})} placeholder="24-118"/></span><span className="f-unit">NO.</span></label>
       <label className="f"><span className="f-main"><span className="f-lbl">Location</span><input className="f-val" style={{fontFamily:'var(--bd)',fontSize:15}} value={f.location} onChange={e=>setF({...f,location:e.target.value})} placeholder="Mission Bay, SF"/></span><span className="f-unit"><Icon n="grid" s={14}/></span></label>
+      <div><span className="field-lbl">Job scope — sets the estimate categories</span>
+        <Seg opts={SCOPEKEYS.map(k=>({v:k,l:SCOPES[k].name.split(' / ')[0]}))} value={f.scope} onChange={(v)=>setF({...f,scope:v})}/></div>
     </div>
     <div className="dact"><button className="b sec" style={{flex:1}} onClick={onClose}>Cancel</button><button className="b pri" style={{flex:1.6}} disabled={!f.name.trim()} onClick={()=>onCreate(f)}>Create project</button></div>
   </div></div>;
@@ -1003,36 +1140,44 @@ function App(){
   const [tab,setTab]=useState('dash'); const [modal,setModal]=useState(false); const [navOpen,setNavOpen]=useState(false);
   const [online,setOnline]=useState(false); const [toastMsg,setToastMsg]=useState(null);
   const [theme,setTheme]=useState(()=>localStorage.getItem('okt_theme')||'dark');
+  const [rookie,setRookie]=useState(()=>localStorage.getItem('okt_rookie')==='1');
+  const [rates,setRates]=useState(()=>{ try{return JSON.parse(localStorage.getItem('okt_rates'))||RATES;}catch(e){return RATES;} });
   const toast=(m)=>{ setToastMsg(m); setTimeout(()=>setToastMsg(null),2200); };
   useEffect(()=>{ document.documentElement.setAttribute('data-theme',theme); localStorage.setItem('okt_theme',theme);
     document.querySelector('meta[name=theme-color]').setAttribute('content',theme==='dark'?'#0a1017':'#f2f4f6'); },[theme]);
-  useEffect(()=>{ if(!window.fb) return; window.fb.connState(setOnline); const off=window.fb.listen('projects',(v)=>{ if(v){ setData(v); saveLocal(v); } }); return off; },[]);
+  useEffect(()=>{ localStorage.setItem('okt_rookie',rookie?'1':'0'); },[rookie]);
+  useEffect(()=>{ if(!window.fb) return; window.fb.connState(setOnline);
+    const off=window.fb.listen('projects',(v)=>{ if(v){ setData(v); saveLocal(v); } });
+    const offR=window.fb.listen('rates',(v)=>{ if(v) setRates(v); });
+    return ()=>{off();offR();}; },[]);
+  const saveRates=(r)=>{ setRates(r); try{localStorage.setItem('okt_rates',JSON.stringify(r));}catch(e){} if(window.fb) window.fb.set('rates',r).catch(()=>{}); };
 
   const projects=Object.keys(data).map(id=>({id,...data[id]}));
   const active=activeId&&data[activeId]?data[activeId]:null;
   const writeProject=useCallback((id,proj)=>{ setData(prev=>{const next={...prev,[id]:proj};saveLocal(next);return next;}); if(window.fb) window.fb.set('projects/'+id,proj).catch(()=>{}); },[]);
-  function createProject(f){ const id=uid('p'); const proj={meta:{name:f.name.trim(),jobNumber:f.jobNumber,location:f.location,createdAt:todayISO()},runs:{},takeoff:{items:{}}};
+  function createProject(f){ const id=uid('p'); const proj={meta:{name:f.name.trim(),jobNumber:f.jobNumber,location:f.location,scope:f.scope||'tower',createdAt:todayISO()},runs:{},takeoff:{items:{}}};
     writeProject(id,proj); setActiveId(id); localStorage.setItem('okt_active',id); setModal(false); setTab('dash'); toast('Project created & synced'); }
   function selectProject(id){ setActiveId(id); localStorage.setItem('okt_active',id); setTab('dash'); }
   const saveRun=(type,label,inputs,outputs)=>{ if(!active) return; const id=uid('r'); const runs={...(active.runs||{}),[id]:{id,type,label,inputs,date:todayISO()}}; writeProject(activeId,{...active,runs}); toast('Run saved to '+active.meta.name); };
-  const addTakeoff=(items)=>{ if(!active) return; const m={...((active.takeoff&&active.takeoff.items)||{})}; items.forEach(it=>{const id=uid('t');m[id]={id,...it,rate:0};}); writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); toast(items.length+' item(s) added to takeoff'); };
+  const addTakeoff=(items)=>{ if(!active) return; const m={...((active.takeoff&&active.takeoff.items)||{})}; items.forEach(it=>{const id=uid('t');m[id]={id,...it,rate:rateFor(rates,it.category,it.unit)};}); writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); toast(items.length+' item(s) added to estimate'); };
   const setTakeoffItems=(m)=>{ if(!active) return; writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); };
 
-  const NAV=[{g:'PROJECT'},{k:'dash',n:'Dashboard',i:'grid'},{k:'takeoff',n:'Takeoff',i:'file',badge:active&&active.takeoff&&active.takeoff.items?Object.keys(active.takeoff.items).length:0},
+  const NAV=[{g:'PROJECT'},{k:'dash',n:'Dashboard',i:'grid'},{k:'takeoff',n:'Estimate',i:'file',badge:active&&active.takeoff&&active.takeoff.items?Object.keys(active.takeoff.items).length:0},
     {g:'CALCULATORS'},{k:'concrete',n:'Concrete',i:'box'},{k:'formwork',n:'Formwork',i:'gauge'},{k:'reshore',n:'Reshore',i:'layers'},{k:'pump',n:'Concrete Pump',i:'gauge'},{k:'rebar',n:'Rebar + Crane',i:'grid'},{k:'thermal',n:'Mass Thermal',i:'thermo'},{k:'rigging',n:'Rigging',i:'hook'}];
-  const TITLES={dash:['Dashboard','','project overview & calc runs'],takeoff:['Takeoff','','aggregate quantities → export'],
+  const TITLES={dash:['Dashboard','','project overview & calc runs'],takeoff:['Estimate','','priced master estimate → export'],
     concrete:['Concrete Volume','','pours → takeoff CY'],
     reshore:['Reshore / Backshore','ACI 209 · SIMPLIFIED','multi-level construction load capacity'],formwork:['Formwork Pressure','ACI 347','lateral form pressure'],
     pump:['Concrete Pump','PUTZMEISTER','pressure, output & washout'],rebar:['Rebar + Crane','ACI 318-14','lap/dev · schedule · outrigger'],
     thermal:['Mass Concrete Thermal','ACI 207','peak temp & ΔT estimate'],rigging:['Rigging & Lift','','sling tension by angle']};
 
-  return <div className="app">
+  return <RookieCtx.Provider value={rookie}><div className="app">
     <div className="topbar">
       <button className="b icon sec menu-btn" onClick={()=>setNavOpen(o=>!o)}><Icon n="grid" s={18}/></button>
       <Mark size="s34"/>
       <div className="lockup"><span className="lk1">ONKLOOTH</span><span className="lk2">TAKEOFF · FIELD ENG</span></div>
       <span className="sp"/>
       {projects.length>0&&active&&<div className="projsel" onClick={()=>{ const ids=projects.map(p=>p.id); const cur=ids.indexOf(activeId); selectProject(ids[(cur+1)%ids.length]); }} title="Switch project">{active.meta.name}<Icon n="chevron" s={16}/></div>}
+      <button className={'b icon sec'+(rookie?' on':'')} title="Rookie mode — input help" onClick={()=>setRookie(r=>!r)}><Icon n="grad" s={18}/></button>
       <ThemeBtn theme={theme} setTheme={setTheme}/>
       <button className="b sec" onClick={()=>setModal(true)}><Icon n="plus" s={16}/>New</button>
       <SyncChip fb={window.fb} online={online}/>
@@ -1042,13 +1187,13 @@ function App(){
       <Mark size="s56"/>
       <p className="kick acc" style={{marginTop:18}}>OpenYap field tools</p>
       <h1 className="hero-h">Concrete numbers,<br/>on the deck.</h1>
-      <p className="hero-sub">Start a project — every reshore, formwork, pump and rebar calc you run saves and syncs, then rolls up into a takeoff you can export.</p>
+      <p className="hero-sub">Start a project, pick its scope, and every calc you run saves, syncs, and rolls up into a priced master estimate you can export.</p>
       <button className="b pri big" onClick={()=>setModal(true)}><Icon n="plus" s={18}/>Start a project</button>
       {projects.length>0&&<div style={{marginTop:28}}>
         <p className="kick">On this device</p>
-        <div style={{display:'flex',flexDirection:'column',gap:10}}>{projects.map(p=><button key={p.id} onClick={()=>selectProject(p.id)}><Frame className="proj-card"><div><div className="pn">{p.meta.name}</div><div className="pm">JOB {p.meta.jobNumber||'—'} · {p.meta.location||'—'}</div></div><Icon n="chevron" s={18} c="var(--mut)"/></Frame></button>)}</div>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>{projects.map(p=><button key={p.id} onClick={()=>selectProject(p.id)}><Frame className="proj-card"><div><div className="pn">{p.meta.name}</div><div className="pm">JOB {p.meta.jobNumber||'—'} · {(SCOPES[p.meta.scope]||SCOPES.tower).name} · {p.meta.location||'—'}</div></div><Icon n="chevron" s={18} c="var(--mut)"/></Frame></button>)}</div>
       </div>}
-      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.2 — YAP LESS · POUR MORE</div>
+      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.3 — YAP LESS · POUR MORE</div>
     </div></div>
     :<div className="body">
       <div className={'nav'+(navOpen?' open':'')} onClick={()=>setNavOpen(false)}>
@@ -1057,7 +1202,7 @@ function App(){
       <div className="main">
         <div className="head"><h1>{TITLES[tab][0]}</h1><div className="meta">{active.meta.name}{active.meta.jobNumber?' · JOB '+active.meta.jobNumber:''}{TITLES[tab][1]?' · '+TITLES[tab][1]:''} — {TITLES[tab][2]}</div></div>
         {tab==='dash'&&<Dashboard project={active} go={setTab}/>}
-        {tab==='takeoff'&&<Takeoff project={active} setItems={setTakeoffItems} toast={toast}/>}
+        {tab==='takeoff'&&<Takeoff project={active} setItems={setTakeoffItems} toast={toast} rates={rates} saveRates={saveRates}/>}
         {tab==='concrete'&&<ConcreteCalc onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='reshore'&&<Reshore onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='formwork'&&<Formwork onSave={saveRun} onTakeoff={addTakeoff}/>}
@@ -1071,7 +1216,7 @@ function App(){
     {modal&&<ProjectModal onClose={()=>setModal(false)} onCreate={createProject}/>}
     {active&&<Alfred tab={tab}/>}
     {toastMsg&&<Toast msg={toastMsg}/>}
-  </div>;
+  </div></RookieCtx.Provider>;
 }
 function Toast({msg}){
   const ref=useRef(null);
