@@ -204,13 +204,15 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 .projsel select{position:absolute;opacity:0;pointer-events:none}
 
 /* ═══════════════════════ CALC TILES ═══════════════════════ */
-.tile{text-align:left;padding:16px;min-height:96px;display:flex;flex-direction:column;gap:9px;background:var(--surface)}
-.tile:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.tile{text-align:left;padding:16px;min-height:96px;display:flex;flex-direction:column;gap:9px;background:var(--surface);transition:background .12s,border-color .12s}
+.tile:hover{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.tile:hover .cn{color:var(--accent)}
 .tile svg{color:var(--accent)}
 .tile .tt{font-family:var(--hd);font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:.01em;line-height:1.05}
 .tile .th{font-family:var(--mo);font-size:10px;letter-spacing:.06em;color:var(--mut);margin-top:auto}
-.rlist{border:1px solid var(--line)}
-.rlist .ri{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 13px;border-bottom:1px solid var(--line)}
+.rlist{border:1px solid var(--line);background:var(--surface)}
+.rlist .ri{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 13px;border-bottom:1px solid var(--line);cursor:default;transition:background .12s}
+.rlist .ri:hover{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
 .rlist .ri:last-child{border-bottom:none}
 .rlist .ri .rn{font-size:13px;color:var(--ink)}
 .rlist .ri .rv{margin-left:auto;font-family:var(--mo);font-size:12px;color:var(--ok-ink)}
@@ -227,7 +229,8 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
   display:flex;align-items:center;padding:8px 12px;gap:8px}
 .tk-cat .cl{font-family:var(--hd);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--accent)}
 .tk-cat .cs{margin-left:auto;font-family:var(--mo);font-size:11px;color:var(--mut)}
-.tk-row{display:grid;grid-template-columns:1fr 62px 44px 74px 84px 36px;align-items:center;min-height:46px;border-bottom:1px solid var(--line)}
+.tk-row{display:grid;grid-template-columns:1fr 62px 44px 74px 84px 36px;align-items:center;min-height:46px;border-bottom:1px solid var(--line);transition:background .12s}
+.tk-row:hover{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
 .tk-row:last-child{border-bottom:none}
 .tk-cell{padding:0 8px}
 .tk-in{width:100%;background:transparent;border:1px solid transparent;color:var(--ink);font-family:var(--bd);font-size:13px;padding:6px 6px}
@@ -248,7 +251,8 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 .hero-h{font-family:var(--hd);font-weight:600;font-size:42px;line-height:1.02;text-transform:none;letter-spacing:-.01em;margin:12px 0 10px}
 .hero-sub{color:var(--mut);font-size:15px;margin:0 0 22px;max-width:440px}
 .proj-card{display:flex;align-items:center;gap:12px;padding:15px;min-height:64px;background:var(--surface);text-align:left;width:100%}
-.proj-card:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.proj-card{transition:background .12s}
+.proj-card:hover{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
 .proj-card .pn{font-family:var(--hd);font-weight:600;font-size:18px;text-transform:uppercase;letter-spacing:.01em}
 .proj-card .pm{font-family:var(--mo);font-size:10px;letter-spacing:.06em;color:var(--mut);margin-top:2px;text-transform:uppercase}
 .proj-card .pt{margin-left:auto;font-family:var(--mo);font-size:13px;color:var(--ok-ink)}
