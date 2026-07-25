@@ -365,6 +365,7 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
       window.fb={ online:true,
         listen:function(p,cb){var r=db.ref(NS+'/'+p);var h=r.on('value',function(s){cb(s.val());});return function(){r.off('value',h);};},
         set:function(p,v){return db.ref(NS+'/'+p).set(v);},
+        get:function(p){return db.ref(NS+'/'+p).get().then(function(s){return s.val();});},
         rootGet:function(p){return db.ref(p).get().then(function(s){return s.val();});},
         connState:function(cb){db.ref('.info/connected').on('value',function(s){cb(!!s.val());});} };
     } else window.fb=null;
@@ -1095,7 +1096,7 @@ function PlanTakeoff({project,pid,setPlan,onTakeoff,toast}){
   }
   redrawRef.current=redraw;
   // load raster from IndexedDB on project change
-  useEffect(()=>{ let alive=true; (async()=>{ if(plan.hasImg){ const rec=await idbGet('okt_plan_'+pid); if(alive&&rec){ const im=new Image(); im.onload=()=>{ imgRef.current=im; fit(); redrawRef.current(); }; im.src=rec.dataURL; } } else { imgRef.current=null; } redrawRef.current(); })(); return ()=>{alive=false;}; },[pid,plan.hasImg]);
+  useEffect(()=>{ let alive=true; (async()=>{ if(plan.hasImg){ let rec=await idbGet('okt_plan_'+pid); if(!rec&&window.fb){ try{ rec=await window.fb.get('plans/'+pid); if(rec) idbPut('okt_plan_'+pid,rec); }catch(e){} } if(alive&&rec){ const im=new Image(); im.onload=()=>{ imgRef.current=im; fit(); redrawRef.current(); }; im.src=rec.dataURL; } } else { imgRef.current=null; } redrawRef.current(); })(); return ()=>{alive=false;}; },[pid,plan.hasImg]);
   useEffect(()=>{ redrawRef.current(); },[tick,tool,project.plan]);
   useEffect(()=>{ const cv=cvRef.current; if(!cv)return; const onWheel=(e)=>{ e.preventDefault(); const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,v=viewRef.current,f=Math.exp(-e.deltaY*0.0015),ns=Math.max(0.05,Math.min(v.sc*f,40)); v.ox=mx-(mx-v.ox)*(ns/v.sc); v.oy=my-(my-v.oy)*(ns/v.sc); v.sc=ns; redrawRef.current(); }; cv.addEventListener('wheel',onWheel,{passive:false}); const onR=()=>redrawRef.current(); window.addEventListener('resize',onR); return ()=>{cv.removeEventListener('wheel',onWheel);window.removeEventListener('resize',onR);}; },[]);
 
@@ -1121,7 +1122,7 @@ function PlanTakeoff({project,pid,setPlan,onTakeoff,toast}){
   function pu(e){ const p=panRef.current; panRef.current=null; if(!p)return; if(p.moved||tool==='pan'||!imgRef.current)return;
     const r=e.currentTarget.getBoundingClientRect(); const [nx,ny]=nrm(e.clientX-r.left,e.clientY-r.top); if(nx<0||ny<0||nx>1||ny>1)return; addPoint(nx,ny);
   }
-  async function onFile(file){ if(!file)return; setBusy(true); try{ const rec=await rasterizePlan(file); await idbPut('okt_plan_'+pid,rec); const im=new Image(); im.onload=()=>{ imgRef.current=im; savePlan({hasImg:true,dims:{w:rec.w,h:rec.h}}); fit(); redrawRef.current(); }; im.src=rec.dataURL; toast('Plan loaded'); }catch(e){ toast('Could not load: '+e.message); } setBusy(false); }
+  async function onFile(file){ if(!file)return; setBusy(true); try{ const rec=await rasterizePlan(file); await idbPut('okt_plan_'+pid,rec); if(window.fb) window.fb.set('plans/'+pid,rec).then(()=>toast('Plan synced to cloud')).catch(()=>{}); const im=new Image(); im.onload=()=>{ imgRef.current=im; savePlan({hasImg:true,dims:{w:rec.w,h:rec.h}}); fit(); redrawRef.current(); }; im.src=rec.dataURL; toast('Plan loaded'); }catch(e){ toast('Could not load: '+e.message); } setBusy(false); }
 
   const draftLive=()=>{ const d=draftRef.current; if(!d.length)return null; if(tool==='count')return {q:d.length,u:'EA'}; if(tool==='line')return {q:round(segLenFt(d,W,H,ppf),1),u:'LF'}; if(tool==='area')return {q:round(areaFt(d,W,H,ppf),0),u:'SF'}; if(tool==='volume')return {q:round(areaFt(d,W,H,ppf)*(depth/12)/27,2),u:'CY'}; return null; };
   const live=draftLive();
