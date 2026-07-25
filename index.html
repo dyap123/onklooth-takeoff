@@ -265,6 +265,38 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 .chart-card .ck{font-family:var(--mo);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:12px}
 .chart-box{position:relative;height:200px}
 .chart-empty{height:200px;display:grid;place-items:center;color:var(--dim);font-family:var(--mo);font-size:11px;text-align:center}
+/* ---- Plan takeoff ---- */
+.plan-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.plan-tools{display:flex;border:1px solid var(--line)}
+.plan-tools button{min-width:52px;min-height:44px;border:none;border-left:1px solid var(--line);background:transparent;color:var(--mut);display:grid;place-items:center;gap:2px}
+.plan-tools button:first-child{border-left:none}
+.plan-tools button.on{background:var(--accent);color:var(--on-solid)}
+.plan-tools button:not(.on):hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.plan-tools button .tl{font-family:var(--mo);font-size:8px;letter-spacing:.04em}
+.plan-canvas-wrap{position:relative;height:64vh;min-height:420px;border:1px solid var(--line);background:var(--bg2);overflow:hidden;touch-action:none}
+.plan-canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.plan-drop{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:var(--mut);padding:24px}
+.plan-drop.drag{background:color-mix(in srgb,var(--accent) 10%,transparent);outline:2px dashed var(--accent);outline-offset:-10px}
+.plan-scalechip{position:absolute;left:12px;top:12px;z-index:3;display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);padding:6px 11px;font-family:var(--mo);font-size:11px;color:var(--mut)}
+.plan-scalechip b{color:var(--ink)}
+.plan-scalechip.warn{border-color:var(--warn);color:var(--warn-ink)}
+.plan-zoom{position:absolute;right:12px;bottom:12px;z-index:3;display:flex;flex-direction:column;border:1px solid var(--line)}
+.plan-zoom button{width:38px;height:38px;background:var(--surface);border:none;border-bottom:1px solid var(--line);color:var(--ink);font-size:16px;display:grid;place-items:center}
+.plan-zoom button:last-child{border-bottom:none}
+.plan-actionbar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--accent);padding:8px 10px 8px 14px;box-shadow:var(--shadow-lg)}
+.plan-actionbar .live{font-family:var(--mo);font-size:14px;font-weight:700;color:var(--accent)}
+.plan-actionbar .live small{color:var(--mut);font-weight:400;font-size:11px}
+.plan-mlist{border:1px solid var(--line);background:var(--surface);margin-top:6px}
+.plan-mrow{display:grid;grid-template-columns:20px 108px 1fr 86px 92px 30px;align-items:center;gap:9px;min-height:44px;padding:0 12px;border-bottom:1px solid var(--line);transition:background .12s}
+.plan-mrow:last-child{border-bottom:none}
+.plan-mrow:hover{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+.plan-mrow.off{opacity:.45}
+.plan-mrow .msel{width:100%;background:transparent;border:1px solid var(--line2);color:var(--ink);font-family:var(--bd);font-size:11.5px;padding:5px 4px;border-radius:0}
+.plan-mrow .mlbl{width:100%;background:transparent;border:1px solid transparent;color:var(--ink);font-size:12.5px;padding:5px}
+.plan-mrow .mlbl:hover{border-color:var(--line2)}
+.plan-mrow .mlbl:focus{outline:none;border-color:var(--accent);background:var(--bg2)}
+.plan-mrow .mq{font-family:var(--mo);font-size:12px;color:var(--mut);text-align:right}
+.plan-mrow .madd{min-height:32px;padding:0 9px;font-size:11px}
 
 /* ═══════════════════════ EMPTY / WELCOME / MODAL ═══════════════════════ */
 .empty{text-align:center;color:var(--mut);padding:44px 20px;border:1px dashed var(--line);font-size:13px}
@@ -322,6 +354,7 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/motion@10.18.0/dist/motion.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <script>
 (function(){
@@ -421,10 +454,35 @@ function calcRigging(i){
 const uid=(p)=>(p||'')+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const num=(v,d=0)=>(isFinite(v)?Number(v).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d}):'—');
 const round=(v,d=1)=>isFinite(v)?Math.round(v*Math.pow(10,d))/Math.pow(10,d):0;
+function hexA(h,a){ if(!h||h[0]!=='#')return h; let s=h.slice(1); if(s.length===3)s=s.split('').map(c=>c+c).join(''); const n=parseInt(s,16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
 function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const LS='okt_data_v1';
 function loadLocal(){try{return JSON.parse(localStorage.getItem(LS))||{};}catch(e){return {};}}
 function saveLocal(d){try{localStorage.setItem(LS,JSON.stringify(d));}catch(e){}}
+
+/* ---- Plan takeoff: geometry (normalized pts × image dims ÷ pxPerFt) ---- */
+const TOOL_UNIT={count:'EA',line:'LF',area:'SF',volume:'CY'};
+function segLenFt(pts,W,H,ppf){ if(!ppf||pts.length<2) return 0; let d=0; for(let k=1;k<pts.length;k++) d+=Math.hypot((pts[k][0]-pts[k-1][0])*W,(pts[k][1]-pts[k-1][1])*H); return d/ppf; }
+function areaFt(pts,W,H,ppf){ if(!ppf||pts.length<3) return 0; let a=0; for(let k=0;k<pts.length;k++){ const j=(k+1)%pts.length; a+=(pts[k][0]*W)*(pts[j][1]*H)-(pts[j][0]*W)*(pts[k][1]*H); } return Math.abs(a/2)/(ppf*ppf); }
+function measQty(m,W,H,ppf){ if(m.type==='count') return m.pts.length; if(m.type==='line') return segLenFt(m.pts,W,H,ppf); if(m.type==='area') return areaFt(m.pts,W,H,ppf); if(m.type==='volume') return areaFt(m.pts,W,H,ppf)*((m.depthIn||0)/12)/27; return 0; }
+/* IndexedDB raster cache — plan images stay out of RTDB */
+function idbDB(){ return new Promise((res,rej)=>{ const r=indexedDB.open('okt',1); r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('plans')) r.result.createObjectStore('plans'); }; r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbPut(k,v){ try{ const d=await idbDB(); return new Promise(res=>{ const t=d.transaction('plans','readwrite'); t.objectStore('plans').put(v,k); t.oncomplete=()=>res(1); t.onerror=()=>res(0); }); }catch(e){ return 0; } }
+async function idbGet(k){ try{ const d=await idbDB(); return new Promise(res=>{ const t=d.transaction('plans','readonly'); const q=t.objectStore('plans').get(k); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); }catch(e){ return null; } }
+/* rasterize an upload (image or PDF pg1) → {dataURL,w,h}, downscaled */
+async function rasterizePlan(file){ const MAX=2200;
+  if(file.type==='application/pdf'){ const lib=window.pdfjsLib; if(!lib) throw new Error('PDF library still loading');
+    lib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf=await file.arrayBuffer(); const pdf=await lib.getDocument({data:buf}).promise; const page=await pdf.getPage(1);
+    let vp=page.getViewport({scale:1}); vp=page.getViewport({scale:Math.min(MAX/vp.width,MAX/vp.height,3)});
+    const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height);
+    await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+    return {dataURL:c.toDataURL('image/jpeg',0.85),w:c.width,h:c.height}; }
+  const url=await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(file); });
+  const img=await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; });
+  const s=Math.min(MAX/img.width,MAX/img.height,1), w=Math.round(img.width*s), h=Math.round(img.height*s);
+  const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+  return {dataURL:c.toDataURL('image/jpeg',0.85),w,h}; }
 
 /* ═══════════ ICONS (Lucide-style, stroke 1.5) ═══════════ */
 const P={
@@ -435,7 +493,14 @@ const P={
   x:'M18 6 6 18M6 6l12 12', sun:'M12 3v2M12 19v2M5 12H3M21 12h-2M6 6l1.5 1.5M16.5 16.5 18 18M18 6l-1.5 1.5M7.5 16.5 6 18',
   moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z', printer:'M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z', file:'M14 3H6v18h12V8z',
   box:'M12 3 3 7.5v9l9 4.5 9-4.5v-9zM3 7.5l9 4.5 9-4.5M12 12v9', thermo:'M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0z', hook:'M12 22V8M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M5 12H2a10 10 0 0 0 20 0h-3',
-  grad:'M22 10 12 5 2 10l10 5 10-5zM6 12v5c3 2 9 2 12 0v-5M22 10v6', tag:'M12 2 2 12l10 10 10-10zM12 7v10M8 12h8'
+  grad:'M22 10 12 5 2 10l10 5 10-5zM6 12v5c3 2 9 2 12 0v-5M22 10v6', tag:'M12 2 2 12l10 10 10-10zM12 7v10M8 12h8',
+  ruler:'M15.3 2.7a1 1 0 0 1 1.4 0l4.6 4.6a1 1 0 0 1 0 1.4L8.7 21.3a1 1 0 0 1-1.4 0l-4.6-4.6a1 1 0 0 1 0-1.4zM14.5 4l2 2M11 7.5l2 2M7.5 11l2 2M4 14.5l2 2',
+  move:'M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20',
+  crosshair:'M12 2v20M2 12h20M12 8a4 4 0 100 8 4 4 0 000-8z',
+  polyline:'M3 18l6-6 4 4 8-8', poly:'M12 2 22 8.5v7L12 22 2 15.5v-7z',
+  pin:'M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12zM12 8a2.5 2.5 0 100 5 2.5 2.5 0 000-5z',
+  eye:'M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6zM12 9a3 3 0 100 6 3 3 0 000-6z',
+  upload:'M12 15V3M7 8l5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2', undo:'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-4'
 };
 function Icon({n,s=18,c}){
   const extra=[];
@@ -989,6 +1054,115 @@ function CraneTab({onSave,onTakeoff}){
   </div>;
 }
 
+/* ═══════════ PLAN TAKEOFF (on-screen measure) ═══════════ */
+const PLAN_INFO={pan:'Drag to pan, wheel/pinch to zoom. Load a plan, then pick a measure tool.',scale:'Click two points on a known dimension, then type its real length. Sets the drawing scale.',count:'Click to drop a marker on each item (columns, footings, embeds). → EA.',line:'Click along a path; double-click or Finish to close. → LF.',area:'Click the corners of an area; double-click or Finish. → SF.',volume:'Outline an area + set a thickness → concrete volume in CY.'};
+function PlanTakeoff({project,pid,setPlan,onTakeoff,toast}){
+  const rookie=useContext(RookieCtx);
+  const plan=project.plan||{}; const measures=plan.measures||{}; const ppf=plan.scale&&plan.scale.ppf; const W=(plan.dims&&plan.dims.w)||1, H=(plan.dims&&plan.dims.h)||1;
+  const scope=SCOPES[project.meta.scope]||SCOPES.tower;
+  const [tool,setTool]=useState('pan'); const [cat,setCat]=useState(scope.cats[0]); const [depth,setDepth]=useState(8);
+  const [busy,setBusy]=useState(false); const [dragOver,setDragOver]=useState(false); const [tick,setTick]=useState(0);
+  const [scaleAsk,setScaleAsk]=useState(null); const [scaleFt,setScaleFt]=useState('');
+  const cvRef=useRef(null), wrapRef=useRef(null), imgRef=useRef(null), viewRef=useRef({ox:0,oy:0,sc:1}), draftRef=useRef([]), hoverRef=useRef(null), panRef=useRef(null), redrawRef=useRef(()=>{});
+  const bump=()=>setTick(t=>t+1);
+  const scr=(p)=>{const v=viewRef.current;return [v.ox+p[0]*W*v.sc, v.oy+p[1]*H*v.sc];};
+  const nrm=(x,y)=>{const v=viewRef.current;return [(x-v.ox)/(W*v.sc),(y-v.oy)/(H*v.sc)];};
+  function fit(){ const wr=wrapRef.current,img=imgRef.current; if(!wr)return; const cw=wr.clientWidth,ch=wr.clientHeight; if(img){ const sc=Math.min(cw/W,ch/H)*0.94; viewRef.current={sc,ox:(cw-W*sc)/2,oy:(ch-H*sc)/2}; } }
+  function redraw(){ const cv=cvRef.current,wr=wrapRef.current; if(!cv||!wr)return; const dpr=window.devicePixelRatio||1, cw=wr.clientWidth,ch=wr.clientHeight;
+    if(cv.width!==Math.round(cw*dpr)){cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);} const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,cw,ch);
+    const img=imgRef.current,v=viewRef.current;
+    if(img){ g.globalAlpha=plan.hideImg?0:(plan.dimImg?0.35:1); g.drawImage(img,v.ox,v.oy,W*v.sc,H*v.sc); g.globalAlpha=1; }
+    const css=getComputedStyle(document.documentElement),col=(x)=>css.getPropertyValue(x).trim();
+    const acc=col('--accent'),ok=col('--ok'),okk=col('--ok-ink'),warn=col('--warn');
+    const TC={count:acc,line:'#22d3ee',area:okk,volume:warn};
+    // saved measures
+    Object.values(measures).forEach(m=>{ if(m.hidden)return; const c=TC[m.type]||acc; g.strokeStyle=c; g.fillStyle=hexA(c,.16); g.lineWidth=2;
+      const ps=m.pts.map(scr);
+      if(m.type==='count'){ ps.forEach(p=>{ g.beginPath();g.arc(p[0],p[1],5,0,7);g.fillStyle=c;g.fill();g.strokeStyle='#fff';g.lineWidth=1.5;g.stroke(); }); }
+      else if(m.type==='line'){ g.beginPath();ps.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke(); ps.forEach(p=>{g.beginPath();g.arc(p[0],p[1],3,0,7);g.fillStyle=c;g.fill();}); }
+      else{ if(ps.length){ g.beginPath();ps.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill();g.stroke(); } }
+      // label at centroid
+      if(ps.length){ const cx=ps.reduce((s,p)=>s+p[0],0)/ps.length, cy=ps.reduce((s,p)=>s+p[1],0)/ps.length; g.fillStyle=c; g.font='600 11px Barlow'; g.textAlign='center'; g.fillText(m.label||'',cx,cy); }
+    });
+    // scale line
+    if(plan.scale&&plan.scale.calPts){ const a=scr(plan.scale.calPts[0]),b=scr(plan.scale.calPts[1]); g.strokeStyle=warn;g.lineWidth=2;g.setLineDash([5,4]); g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();g.setLineDash([]); }
+    // draft
+    const d=draftRef.current, hov=hoverRef.current;
+    if(d.length||(['scale','count','line','area','volume'].indexOf(tool)>=0&&hov)){ const c=tool==='scale'?warn:(TC[tool]||acc); g.strokeStyle=c;g.fillStyle=hexA(c,.14);g.lineWidth=2; const ps=d.map(scr);
+      if(tool==='count'){ ps.forEach(p=>{g.beginPath();g.arc(p[0],p[1],5,0,7);g.fillStyle=c;g.fill();g.strokeStyle='#fff';g.lineWidth=1.5;g.stroke();}); }
+      else { const all=hov?ps.concat([scr(hov)]):ps; g.beginPath();all.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); if((tool==='area'||tool==='volume')&&all.length>2){g.closePath();g.fill();} g.stroke(); ps.forEach(p=>{g.beginPath();g.arc(p[0],p[1],3.5,0,7);g.fillStyle=c;g.fill();}); }
+    }
+  }
+  redrawRef.current=redraw;
+  // load raster from IndexedDB on project change
+  useEffect(()=>{ let alive=true; (async()=>{ if(plan.hasImg){ const rec=await idbGet('okt_plan_'+pid); if(alive&&rec){ const im=new Image(); im.onload=()=>{ imgRef.current=im; fit(); redrawRef.current(); }; im.src=rec.dataURL; } } else { imgRef.current=null; } redrawRef.current(); })(); return ()=>{alive=false;}; },[pid,plan.hasImg]);
+  useEffect(()=>{ redrawRef.current(); },[tick,tool,project.plan]);
+  useEffect(()=>{ const cv=cvRef.current; if(!cv)return; const onWheel=(e)=>{ e.preventDefault(); const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,v=viewRef.current,f=Math.exp(-e.deltaY*0.0015),ns=Math.max(0.05,Math.min(v.sc*f,40)); v.ox=mx-(mx-v.ox)*(ns/v.sc); v.oy=my-(my-v.oy)*(ns/v.sc); v.sc=ns; redrawRef.current(); }; cv.addEventListener('wheel',onWheel,{passive:false}); const onR=()=>redrawRef.current(); window.addEventListener('resize',onR); return ()=>{cv.removeEventListener('wheel',onWheel);window.removeEventListener('resize',onR);}; },[]);
+
+  const savePlan=(patch)=>setPlan({...plan,...patch});
+  const setMeasures=(m)=>savePlan({measures:m});
+  function addPoint(nx,ny){ const d=draftRef.current;
+    if(tool==='scale'){ d.push([nx,ny]); if(d.length===2){ setScaleAsk([d[0],d[1]]); draftRef.current=[]; } redrawRef.current(); bump(); return; }
+    d.push([nx,ny]); redrawRef.current(); bump();
+  }
+  function finishDraft(){ const d=draftRef.current; if(!d.length)return;
+    if(tool==='line'&&d.length<2){draftRef.current=[];bump();return;} if((tool==='area'||tool==='volume')&&d.length<3){draftRef.current=[];bump();return;}
+    const n=Object.values(measures).filter(m=>m.type===tool).length+1; const id=uid('m');
+    const m={id,type:tool,pts:d.slice(),category:cat,label:(tool[0].toUpperCase()+tool.slice(1))+' '+n,unit:TOOL_UNIT[tool],ts:Date.now(),added:false,hidden:false}; if(tool==='volume')m.depthIn=depth;
+    setMeasures({...measures,[id]:m}); draftRef.current=[]; hoverRef.current=null; bump();
+  }
+  function commitScale(){ const p=scaleAsk, ft=parseFloat(scaleFt); if(p&&ft>0){ const px=Math.hypot((p[1][0]-p[0][0])*W,(p[1][1]-p[0][1])*H); savePlan({scale:{ppf:px/ft,calPts:p}}); toast('Scale set: '+round(px/ft,1)+' px/ft'); } setScaleAsk(null); setScaleFt(''); setTool('count'); }
+  // pointer (pan on drag, add point on click)
+  function pd(e){ e.currentTarget.setPointerCapture(e.pointerId); const r=e.currentTarget.getBoundingClientRect(); panRef.current={x:e.clientX-r.left,y:e.clientY-r.top,ox:viewRef.current.ox,oy:viewRef.current.oy,moved:false}; }
+  function pm(e){ const r=e.currentTarget.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,p=panRef.current;
+    if(p){ const dx=x-p.x,dy=y-p.y; if(Math.abs(dx)+Math.abs(dy)>4)p.moved=true; if(p.moved){viewRef.current.ox=p.ox+dx;viewRef.current.oy=p.oy+dy;redrawRef.current();} }
+    else if(imgRef.current&&['scale','line','area','volume'].indexOf(tool)>=0){ hoverRef.current=nrm(x,y); redrawRef.current(); }
+  }
+  function pu(e){ const p=panRef.current; panRef.current=null; if(!p)return; if(p.moved||tool==='pan'||!imgRef.current)return;
+    const r=e.currentTarget.getBoundingClientRect(); const [nx,ny]=nrm(e.clientX-r.left,e.clientY-r.top); if(nx<0||ny<0||nx>1||ny>1)return; addPoint(nx,ny);
+  }
+  async function onFile(file){ if(!file)return; setBusy(true); try{ const rec=await rasterizePlan(file); await idbPut('okt_plan_'+pid,rec); const im=new Image(); im.onload=()=>{ imgRef.current=im; savePlan({hasImg:true,dims:{w:rec.w,h:rec.h}}); fit(); redrawRef.current(); }; im.src=rec.dataURL; toast('Plan loaded'); }catch(e){ toast('Could not load: '+e.message); } setBusy(false); }
+
+  const draftLive=()=>{ const d=draftRef.current; if(!d.length)return null; if(tool==='count')return {q:d.length,u:'EA'}; if(tool==='line')return {q:round(segLenFt(d,W,H,ppf),1),u:'LF'}; if(tool==='area')return {q:round(areaFt(d,W,H,ppf),0),u:'SF'}; if(tool==='volume')return {q:round(areaFt(d,W,H,ppf)*(depth/12)/27,2),u:'CY'}; return null; };
+  const live=draftLive();
+  const mlist=Object.values(measures).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const addM=(m)=>{ const q=round(measQty(m,W,H,ppf),m.unit==='CY'?2:(m.unit==='LF'?1:0)); if(!(q>0)){toast('Set scale first');return;} onTakeoff([{category:m.category,desc:m.label,qty:q,unit:m.unit}]); setMeasures({...measures,[m.id]:{...m,added:true}}); };
+  const TOOLS=[['pan','move','Pan'],['scale','crosshair','Scale'],['count','pin','Count'],['line','polyline','Linear'],['area','poly','Area'],['volume','box','Volume']];
+  return <div>
+    <div className="plan-bar">
+      <div className="plan-tools">{TOOLS.map(([k,ic,lb])=><button key={k} className={tool===k?'on':''} onClick={()=>{setTool(k);draftRef.current=[];hoverRef.current=null;redrawRef.current();}} title={lb}><Icon n={ic} s={17}/><span className="tl">{lb}</span></button>)}</div>
+      <label className="b sec" style={{minHeight:44,cursor:'pointer'}}><Icon n="upload" s={16}/>{plan.hasImg?'Replace':'Load plan'}<input type="file" accept="image/*,application/pdf" style={{display:'none'}} onChange={e=>onFile(e.target.files[0])}/></label>
+      {plan.hasImg&&<><button className="b icon sec" title="Fit view" onClick={()=>{fit();redrawRef.current();}}><Icon n="crosshair" s={16}/></button>
+        <button className={'b icon sec'+(plan.dimImg?' on':'')} title="Dim plan" onClick={()=>savePlan({dimImg:!plan.dimImg})}><Icon n="eye" s={16}/></button></>}
+      <span style={{flex:1}}/>
+      <span className="field-lbl" style={{margin:0}}>Category</span>
+      <select className="f-sel" style={{width:150,minHeight:44}} value={cat} onChange={e=>setCat(e.target.value)}>{scope.cats.map(c=><option key={c}>{c}</option>)}</select>
+      {tool==='volume'&&<label className="f" style={{minHeight:44,width:130}}><span className="f-main"><span className="f-lbl">Thickness</span><input className="f-val" type="number" value={depth} onChange={e=>setDepth(parseFloat(e.target.value)||0)}/></span><span className="f-unit">in</span></label>}
+    </div>
+    {rookie&&<div className="note" style={{marginBottom:10}}><b>{tool[0].toUpperCase()+tool.slice(1)}:</b> {PLAN_INFO[tool]}</div>}
+    <div className="plan-canvas-wrap" ref={wrapRef}
+      onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
+      onDrop={e=>{e.preventDefault();setDragOver(false);onFile(e.dataTransfer.files[0]);}}>
+      <canvas ref={cvRef} style={{cursor:tool==='pan'?'grab':(imgRef.current?'crosshair':'default')}} onPointerDown={pd} onPointerMove={pm} onPointerUp={pu} onDoubleClick={()=>{if(['line','area','volume'].indexOf(tool)>=0)finishDraft();}}/>
+      <span className={'plan-scalechip'+(ppf?'':' warn')}><Icon n="crosshair" s={13}/>{ppf?<>Scale <b>{round(ppf,1)} px/ft</b></>:'Scale not set'}</span>
+      {plan.hasImg&&<div className="plan-zoom"><button onClick={()=>{const v=viewRef.current,wr=wrapRef.current;v.ox=wr.clientWidth/2-(wr.clientWidth/2-v.ox)*1.25;v.oy=wr.clientHeight/2-(wr.clientHeight/2-v.oy)*1.25;v.sc*=1.25;redrawRef.current();}}>+</button><button onClick={()=>{const v=viewRef.current,wr=wrapRef.current;v.ox=wr.clientWidth/2-(wr.clientWidth/2-v.ox)*0.8;v.oy=wr.clientHeight/2-(wr.clientHeight/2-v.oy)*0.8;v.sc*=0.8;redrawRef.current();}}>−</button></div>}
+      {!plan.hasImg&&<div className={'plan-drop'+(dragOver?' drag':'')}><Icon n="upload" s={30}/><div style={{fontFamily:'var(--hd)',fontWeight:600,fontSize:17,textTransform:'uppercase',color:'var(--ink)'}}>{busy?'Loading…':'Drop a plan or PDF'}</div><div style={{fontSize:12.5}}>PNG · JPG · PDF — then set the scale and measure</div><label className="b pri" style={{cursor:'pointer',marginTop:4}}><Icon n="upload" s={16}/>Choose file<input type="file" accept="image/*,application/pdf" style={{display:'none'}} onChange={e=>onFile(e.target.files[0])}/></label></div>}
+      {scaleAsk&&<div className="plan-actionbar"><span style={{fontSize:12,color:'var(--mut)'}}>Real length of that line?</span><input className="f-val" autoFocus style={{width:70,fontFamily:'var(--mo)',fontSize:16,borderBottom:'1px solid var(--accent)'}} type="number" value={scaleFt} onChange={e=>setScaleFt(e.target.value)} onKeyDown={e=>e.key==='Enter'&&commitScale()}/><span style={{fontFamily:'var(--mo)',fontSize:12,color:'var(--mut)'}}>ft</span><button className="b pri" style={{minHeight:38}} onClick={commitScale}>Set scale</button><button className="b sec" style={{minHeight:38}} onClick={()=>{setScaleAsk(null);setScaleFt('');}}>Cancel</button></div>}
+      {live&&!scaleAsk&&<div className="plan-actionbar"><span className="live">{live.q}<small> {live.u}</small></span><button className="b icon sec" title="Undo point" style={{minHeight:38}} onClick={()=>{draftRef.current.pop();redrawRef.current();bump();}}><Icon n="undo" s={15}/></button>{tool!=='count'&&<button className="b pri" style={{minHeight:38}} onClick={finishDraft}><Icon n="check" s={15}/>Finish</button>}{tool==='count'&&<button className="b pri" style={{minHeight:38}} onClick={finishDraft}><Icon n="check" s={15}/>Save {draftRef.current.length}</button>}<button className="b sec" style={{minHeight:38}} onClick={()=>{draftRef.current=[];hoverRef.current=null;redrawRef.current();bump();}}>Cancel</button></div>}
+    </div>
+    <div style={{display:'flex',alignItems:'center',marginTop:16,gap:10}}><p className="kick" style={{margin:0}}>Measurements</p><span className="vp clear" style={{fontSize:10}}>{mlist.length}</span><span style={{flex:1}}/>{mlist.some(m=>!m.added)&&<button className="b ok" style={{minHeight:38}} onClick={()=>{const items=mlist.filter(m=>!m.added).map(m=>({category:m.category,desc:m.label,qty:round(measQty(m,W,H,ppf),m.unit==='CY'?2:m.unit==='LF'?1:0),unit:m.unit})).filter(it=>it.qty>0); if(!items.length){toast('Set scale first');return;} onTakeoff(items); const mm={...measures}; mlist.forEach(m=>{if(!m.added&&measQty(m,W,H,ppf)>0)mm[m.id]={...mm[m.id],added:true};}); setMeasures(mm);}}><Icon n="check" s={15}/>Add all</button>}</div>
+    {mlist.length===0? <div className="empty" style={{marginTop:8}}>No measurements yet. Load a plan, set the scale, and start measuring.</div> :
+    <div className="plan-mlist">{mlist.map(m=>{const q=measQty(m,W,H,ppf);return <div key={m.id} className={'plan-mrow'+(m.hidden?' off':'')}>
+      <span style={{color:({count:'var(--accent)',line:'#22d3ee',area:'var(--ok-ink)',volume:'var(--warn)'})[m.type]}}><Icon n={({count:'pin',line:'polyline',area:'poly',volume:'box'})[m.type]} s={15}/></span>
+      <select className="msel" value={m.category} onChange={e=>setMeasures({...measures,[m.id]:{...m,category:e.target.value,added:false}})}>{scope.cats.map(c=><option key={c}>{c}</option>)}</select>
+      <input className="mlbl" value={m.label} onChange={e=>setMeasures({...measures,[m.id]:{...m,label:e.target.value}})}/>
+      <span className="mq">{num(q,m.unit==='CY'?2:m.unit==='LF'?1:0)} {m.unit}{m.type==='volume'?<small style={{color:'var(--dim)'}}> @{m.depthIn}"</small>:''}</span>
+      {m.added? <span className="vp good" style={{fontSize:9,justifySelf:'end'}}>ADDED</span> : <button className="b ok madd" style={{justifySelf:'end'}} onClick={()=>addM(m)}><Icon n="check" s={13}/>Add</button>}
+      <button className="tk-x" title="delete" onClick={()=>{const mm={...measures};delete mm[m.id];setMeasures(mm);}}>×</button>
+    </div>;})}</div>}
+  </div>;
+}
+
 /* ═══════════ CHARTS (Chart.js, theme-aware, single-hue = magnitude) ═══════════ */
 function ChartCanvas({labels,values,cvar,money,theme}){
   const ref=useRef(null); const inst=useRef(null);
@@ -1251,10 +1425,11 @@ function App(){
   const saveRun=(type,label,inputs,outputs)=>{ if(!active) return; const id=uid('r'); const runs={...(active.runs||{}),[id]:{id,type,label,inputs,date:todayISO()}}; writeProject(activeId,{...active,runs}); toast('Run saved to '+active.meta.name); };
   const addTakeoff=(items)=>{ if(!active) return; const m={...((active.takeoff&&active.takeoff.items)||{})}; let ts=Date.now(); items.forEach(it=>{const id=uid('t');m[id]={id,...it,rate:rateFor(rates,it.category,it.unit),ts:ts++};}); writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); toast(items.length+' item(s) added to estimate'); };
   const setTakeoffItems=(m)=>{ if(!active) return; writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); };
+  const setPlan=(planObj)=>{ if(!active) return; writeProject(activeId,{...active,plan:planObj}); };
 
-  const NAV=[{g:'PROJECT'},{k:'dash',n:'Dashboard',i:'grid'},{k:'takeoff',n:'Estimate',i:'file',badge:active&&active.takeoff&&active.takeoff.items?Object.keys(active.takeoff.items).length:0},
+  const NAV=[{g:'PROJECT'},{k:'dash',n:'Dashboard',i:'grid'},{k:'plan',n:'Plan',i:'ruler'},{k:'takeoff',n:'Estimate',i:'file',badge:active&&active.takeoff&&active.takeoff.items?Object.keys(active.takeoff.items).length:0},
     {g:'CALCULATORS'},{k:'concrete',n:'Concrete',i:'box'},{k:'formwork',n:'Formwork',i:'gauge'},{k:'reshore',n:'Reshore',i:'layers'},{k:'pump',n:'Concrete Pump',i:'gauge'},{k:'rebar',n:'Rebar + Crane',i:'grid'},{k:'thermal',n:'Mass Thermal',i:'thermo'},{k:'rigging',n:'Rigging',i:'hook'}];
-  const TITLES={dash:['Dashboard','','project overview & calc runs'],takeoff:['Estimate','','priced master estimate → export'],
+  const TITLES={dash:['Dashboard','','project overview & calc runs'],plan:['Plan Takeoff','','measure quantities off the drawing'],takeoff:['Estimate','','priced master estimate → export'],
     concrete:['Concrete Volume','','pours → takeoff CY'],
     reshore:['Reshore / Backshore','ACI 209 · SIMPLIFIED','multi-level construction load capacity'],formwork:['Formwork Pressure','ACI 347','lateral form pressure'],
     pump:['Concrete Pump','PUTZMEISTER','pressure, output & washout'],rebar:['Rebar + Crane','ACI 318-14','lap/dev · schedule · outrigger'],
@@ -1283,7 +1458,7 @@ function App(){
         <p className="kick">On this device</p>
         <div style={{display:'flex',flexDirection:'column',gap:10}}>{projects.map(p=><button key={p.id} onClick={()=>selectProject(p.id)}><Frame className="proj-card"><div><div className="pn">{p.meta.name}</div><div className="pm">JOB {p.meta.jobNumber||'—'} · {(SCOPES[p.meta.scope]||SCOPES.tower).name} · {p.meta.location||'—'}</div></div><Icon n="chevron" s={18} c="var(--mut)"/></Frame></button>)}</div>
       </div>}
-      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.4 — YAP LESS · POUR MORE</div>
+      <div className="footer" style={{marginTop:30}}>AN OPENYAP FIELD TOOL · v2.5 — YAP LESS · POUR MORE</div>
     </div></div>
     :<div className="body">
       <div className={'nav'+(navOpen?' open':'')} onClick={()=>setNavOpen(false)}>
@@ -1292,6 +1467,7 @@ function App(){
       <div className="main">
         <div className="head"><h1>{TITLES[tab][0]}</h1><div className="meta">{active.meta.name}{active.meta.jobNumber?' · JOB '+active.meta.jobNumber:''}{TITLES[tab][1]?' · '+TITLES[tab][1]:''} — {TITLES[tab][2]}</div></div>
         {tab==='dash'&&<Dashboard project={active} go={setTab} theme={theme}/>}
+        {tab==='plan'&&<PlanTakeoff project={active} pid={activeId} setPlan={setPlan} onTakeoff={addTakeoff} toast={toast}/>}
         {tab==='takeoff'&&<Takeoff project={active} setItems={setTakeoffItems} toast={toast} rates={rates} saveRates={saveRates}/>}
         {tab==='concrete'&&<ConcreteCalc onSave={saveRun} onTakeoff={addTakeoff}/>}
         {tab==='reshore'&&<Reshore onSave={saveRun} onTakeoff={addTakeoff}/>}
