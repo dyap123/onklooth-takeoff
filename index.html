@@ -17,6 +17,7 @@
   --bad:#f87171; --bad-tint:#331419; --bad-ink:#f89b9b;
   --warn:#fbbf24; --warn-tint:#2f2510; --warn-ink:#fbd35e;
   --on-solid:#0a1017;
+  --bg2:#060b11; --line2:#2e4463; --dim:#61748c;
   --shadow-md:0 3px 10px rgba(0,0,0,.16); --shadow-lg:0 12px 32px rgba(0,0,0,.5);
 }
 :root[data-theme="light"]{
@@ -26,6 +27,7 @@
   --bad:#c43d3d; --bad-tint:#fae7e7; --bad-ink:#a02c2c;
   --warn:#996a00; --warn-tint:#fbf2d6; --warn-ink:#7a5500;
   --on-solid:#ffffff;
+  --bg2:#e6eaef; --line2:#b9c6d4; --dim:#8394a6;
   --shadow-lg:0 12px 32px rgba(20,30,45,.22);
 }
 :root{
@@ -111,6 +113,8 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 .seg button.on{background:var(--accent);color:var(--on-solid)}
 .seg button:not(.on):hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
 .seg.mono button{font-family:var(--mo);font-weight:500;font-size:13px;text-transform:none;letter-spacing:0}
+.seg.seg-inline{width:auto;flex:none}
+.seg.seg-inline button{flex:none;min-height:38px;padding:0 14px}
 
 /* ═══════════════════════ LAYOUT ═══════════════════════ */
 .app{display:flex;flex-direction:column;min-height:100vh}
@@ -128,6 +132,7 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 .nav a svg{color:var(--mut);flex:none}
 .nav a .bdg{margin-left:auto;font-family:var(--mo);font-size:10px;color:var(--mut);border:1px solid var(--line);padding:1px 7px}
 .main{flex:1;min-width:0;padding:24px 28px 96px;max-width:1180px}
+.main.wide{max-width:none}
 .menu-btn{display:none}
 @media(max-width:880px){
   .nav{position:fixed;left:0;top:57px;z-index:35;background:var(--bg);transform:translateX(-100%);transition:transform .18s}
@@ -225,15 +230,34 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 /* ═══════════════════════ TAKEOFF ═══════════════════════ */
 .tk-tools{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
 .tk-tools .sp{flex:1}
-.tk{border:1px solid var(--line)}
-.tk-hd{display:grid;grid-template-columns:1fr 62px 44px 74px 84px 36px;gap:0;background:var(--surface);border-bottom:1px solid var(--line)}
+.tk{border:1px solid var(--line);--tkcols:minmax(260px,3fr) minmax(72px,.5fr) minmax(52px,.35fr) minmax(86px,.6fr) minmax(98px,.7fr) 38px}
+.tk-layout{display:block}
+.tk-rail{display:none}
+@media(min-width:1440px){
+  .tk-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
+  .tk-rail{display:block;position:sticky;top:73px}
+  .tk-layout .totbar{display:none}
+}
+.tk-sum{border:1px solid var(--line);background:var(--surface);padding:16px}
+.tk-sum .sg{font-family:var(--mo);font-weight:700;font-size:28px;color:var(--ok-ink);line-height:1.05}
+.tk-sum .sn{font-family:var(--mo);font-size:10px;letter-spacing:.06em;color:var(--mut);margin-top:5px}
+.tk-sum hr{border:none;border-top:1px solid var(--line);margin:15px 0}
+.tk-sb{margin-bottom:11px}
+.tk-sb .sr{display:flex;align-items:baseline;gap:8px;font-size:12px}
+.tk-sb .sr .cn2{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk-sb .sr .cv{margin-left:auto;font-family:var(--mo);font-size:11.5px;color:var(--ink);white-space:nowrap}
+.tk-sb .bar{height:3px;background:color-mix(in srgb,var(--ink) 10%,transparent);margin-top:5px}
+.tk-sb .bar i{display:block;height:100%;background:var(--accent)}
+.tk-rail .acts{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.tk-rail .acts .b{width:100%;justify-content:center}
+.tk-hd{display:grid;grid-template-columns:var(--tkcols);gap:0;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:57px;z-index:2}
 .tk-hd span{font-family:var(--mo);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:9px 8px;text-align:right}
 .tk-hd span:first-child{text-align:left}
 .tk-cat{background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-bottom:1px solid var(--line);
   display:flex;align-items:center;padding:8px 12px;gap:8px}
 .tk-cat .cl{font-family:var(--hd);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--accent)}
 .tk-cat .cs{margin-left:auto;font-family:var(--mo);font-size:11px;color:var(--mut)}
-.tk-row{display:grid;grid-template-columns:1fr 62px 44px 74px 84px 36px;align-items:center;min-height:46px;border-bottom:1px solid var(--line);transition:background .12s}
+.tk-row{display:grid;grid-template-columns:var(--tkcols);align-items:center;min-height:46px;border-bottom:1px solid var(--line);transition:background .12s}
 .tk-row:hover{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
 .tk-row:last-child{border-bottom:none}
 .tk-cell{padding:0 8px}
@@ -273,21 +297,66 @@ h1,h2,h3,h4{font-family:var(--hd);font-weight:600;line-height:1.1;letter-spacing
 .plan-tools button.on{background:var(--accent);color:var(--on-solid)}
 .plan-tools button:not(.on):hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
 .plan-tools button .tl{font-family:var(--mo);font-size:8px;letter-spacing:.04em}
-.plan-canvas-wrap{position:relative;height:64vh;min-height:420px;border:1px solid var(--line);background:var(--bg2);overflow:hidden;touch-action:none}
+/* the shell owns the height; the canvas takes whatever the bar, note and rail leave it,
+   so a wrapping toolbar or an open sheet rail can never push the drawing off-screen */
+.plan-shell{display:flex;flex-direction:column;height:calc(100vh - 178px);min-height:520px}
+/* kept as separate rules on purpose: one selector list containing a prefix a browser
+   does not know invalidates the WHOLE rule, taking the standard selector down with it */
+.plan-shell:fullscreen{background:var(--bg);padding:12px;height:100%;min-height:0}
+.plan-shell:-webkit-full-screen{background:var(--bg);padding:12px;height:100%;min-height:0}
+.plan-canvas-wrap{position:relative;flex:1 1 auto;min-height:300px;border:1px solid var(--line);background:var(--bg2);overflow:hidden;touch-action:none}
+.plan-canvas-wrap.drag{outline:2px dashed var(--accent);outline-offset:-6px}
+.plan-busy{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:4;background:var(--surface);border:1px solid var(--line);padding:6px 12px;font-family:var(--mo);font-size:11px;color:var(--mut)}
+/* sheet rail */
+.plan-rail{display:flex;gap:8px;overflow-x:auto;padding:9px;border:1px solid var(--line);border-bottom:none;background:var(--surface);scrollbar-width:thin}
+.plan-thumb{flex:0 0 96px;border:1px solid var(--line);background:var(--bg2);padding:0;display:flex;flex-direction:column;gap:0;overflow:hidden}
+.plan-thumb .tb{height:72px;width:100%;object-fit:contain;background:var(--bg2);display:block}
+.plan-thumb .tp{height:72px;display:grid;place-items:center;font-family:var(--mo);font-size:10px;color:var(--dim)}
+.plan-thumb .tn{font-family:var(--mo);font-size:9px;letter-spacing:.03em;color:var(--mut);padding:4px 3px;border-top:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.plan-thumb.on{outline:2px solid var(--accent);outline-offset:-2px}
+.plan-thumb.on .tn{background:var(--accent);color:var(--on-solid)}
+.plan-thumb.has .tn::after{content:" ●";color:var(--ok-ink);font-size:7px}
+.plan-sheet{display:inline-flex;align-items:center;border:1px solid var(--line)}
+.plan-sheet button{min-width:34px;min-height:44px;border:none;background:transparent;color:var(--mut);display:grid;place-items:center}
+.plan-sheet button:hover:not(:disabled){color:var(--ink)}
+.plan-sheet button:disabled{opacity:.3;cursor:default}
+.plan-sheet .lbl{font-family:var(--mo);font-size:11.5px;color:var(--ink);padding:0 10px;border-left:1px solid var(--line);border-right:1px solid var(--line);min-height:44px;display:flex;align-items:center;white-space:nowrap;flex:none}
+.plan-cat{display:inline-flex;align-items:center;gap:9px;flex:none}
+.plan-sheet .lbl b{color:var(--accent);margin-right:8px}
+.plan-sheet button.on{background:var(--accent);color:var(--on-solid)}
+.shn{width:32px;background:transparent;border:none;border-bottom:1px dashed var(--line2);color:var(--ink);
+  font-family:var(--mo);font-size:11.5px;text-align:right;padding:1px 2px;border-radius:0}
+.shn:focus{outline:none;border-bottom-color:var(--accent);color:var(--accent)}
+.msheet{background:transparent;border:1px solid var(--line);color:var(--mut);font-family:var(--mo);font-size:9px;
+  letter-spacing:.03em;padding:1px 5px;margin-right:7px;vertical-align:1px}
+.msheet:hover{border-color:var(--accent);color:var(--accent)}
+/* shortcut sheet */
+.keys{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+.keys .kg{font-family:var(--mo);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:14px 0 6px;grid-column:1/-1}
+.keys .kg:first-child{margin-top:0}
+.keys .kr{display:flex;align-items:center;gap:10px;padding:4px 0;font-size:12.5px;color:var(--mut)}
+.keys .kr .kk{margin-left:auto;display:flex;gap:4px;flex:none}
+.keys kbd{font-family:var(--mo);font-size:10px;background:var(--bg2);border:1px solid var(--line2);color:var(--ink);padding:2px 6px;white-space:nowrap}
 .plan-canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
 .plan-drop{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:var(--mut);padding:24px}
 .plan-drop.drag{background:color-mix(in srgb,var(--accent) 10%,transparent);outline:2px dashed var(--accent);outline-offset:-10px}
 .plan-scalechip{position:absolute;left:12px;top:12px;z-index:3;display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);padding:6px 11px;font-family:var(--mo);font-size:11px;color:var(--mut)}
 .plan-scalechip b{color:var(--ink)}
 .plan-scalechip.warn{border-color:var(--warn);color:var(--warn-ink)}
-.plan-zoom{position:absolute;right:12px;bottom:12px;z-index:3;display:flex;flex-direction:column;border:1px solid var(--line)}
+/* left side: the fixed Alfred FAB owns the bottom-right corner */
+.plan-zoom{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;flex-direction:column;border:1px solid var(--line)}
 .plan-zoom button{width:38px;height:38px;background:var(--surface);border:none;border-bottom:1px solid var(--line);color:var(--ink);font-size:16px;display:grid;place-items:center}
 .plan-zoom button:last-child{border-bottom:none}
 .plan-actionbar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--accent);padding:8px 10px 8px 14px;box-shadow:var(--shadow-lg)}
 .plan-actionbar .live{font-family:var(--mo);font-size:14px;font-weight:700;color:var(--accent)}
 .plan-actionbar .live small{color:var(--mut);font-weight:400;font-size:11px}
 .plan-mlist{border:1px solid var(--line);background:var(--surface);margin-top:6px}
-.plan-mrow{display:grid;grid-template-columns:20px 108px 1fr 86px 92px 30px;align-items:center;gap:9px;min-height:44px;padding:0 12px;border-bottom:1px solid var(--line);transition:background .12s}
+.plan-mrow{display:grid;grid-template-columns:20px 108px minmax(120px,1fr) 62px 104px 92px 30px;align-items:center;gap:9px;min-height:44px;padding:0 12px;border-bottom:1px solid var(--line);transition:background .12s}
+.mmul{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);padding:0 4px;min-height:30px}
+.mmul span{font-family:var(--mo);font-size:11px;color:var(--mut)}
+.mmul input{width:100%;min-width:0;background:transparent;border:none;color:var(--ink);font-family:var(--mo);font-size:12px;padding:3px 0;text-align:right}
+.mmul input:focus{outline:none}
+.mmul:focus-within{border-color:var(--accent)}
 .plan-mrow:last-child{border-bottom:none}
 .plan-mrow:hover{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
 .plan-mrow.off{opacity:.45}
@@ -470,20 +539,66 @@ function measQty(m,W,H,ppf){ if(m.type==='count') return m.pts.length; if(m.type
 function idbDB(){ return new Promise((res,rej)=>{ const r=indexedDB.open('okt',1); r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('plans')) r.result.createObjectStore('plans'); }; r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
 async function idbPut(k,v){ try{ const d=await idbDB(); return new Promise(res=>{ const t=d.transaction('plans','readwrite'); t.objectStore('plans').put(v,k); t.oncomplete=()=>res(1); t.onerror=()=>res(0); }); }catch(e){ return 0; } }
 async function idbGet(k){ try{ const d=await idbDB(); return new Promise(res=>{ const t=d.transaction('plans','readonly'); const q=t.objectStore('plans').get(k); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); }catch(e){ return null; } }
-/* rasterize an upload (image or PDF pg1) → {dataURL,w,h}, downscaled */
-async function rasterizePlan(file){ const MAX=2200;
-  if(file.type==='application/pdf'){ const lib=window.pdfjsLib; if(!lib) throw new Error('PDF library still loading');
-    lib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    const buf=await file.arrayBuffer(); const pdf=await lib.getDocument({data:buf}).promise; const page=await pdf.getPage(1);
-    let vp=page.getViewport({scale:1}); vp=page.getViewport({scale:Math.min(MAX/vp.width,MAX/vp.height,3)});
-    const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height);
-    await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
-    return {dataURL:c.toDataURL('image/jpeg',0.85),w:c.width,h:c.height}; }
+/* ---- Multi-sheet plan source: lazy render + cache ----
+   IDB keys: okt_src_<pid> {blob}  ·  okt_page_<pid>_<i> {dataURL,w,h}  ·  okt_thumbs_<pid> [dataURL]
+   Legacy (read-only): okt_plan_<pid> = the old single page-1 raster.                              */
+const PLAN_MAX=2200, THUMB_MAX=150, PUSH_MAX=3.5e6;
+const SHEET_RE=/^[A-Z]{1,3}[-.–]?\d{1,3}(\.\d{1,2})?[A-Z]?$/;
+/* Without cMapUrl/standardFontDataUrl pdf.js resolves its font data against the page origin,
+   404s, and stalls ~20s on the FIRST page it renders. cdnjs does not ship those folders; jsdelivr does. */
+const PDFJS_ASSETS='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/';
+function pdfLib(){ const l=window.pdfjsLib; if(!l) throw new Error('PDF library still loading');
+  l.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; return l; }
+/* pdf.js detaches the buffer it is handed, so always give it a fresh copy of the blob */
+async function openPDFBlob(blob){ const buf=await blob.arrayBuffer();
+  return pdfLib().getDocument({data:buf,cMapUrl:PDFJS_ASSETS+'cmaps/',cMapPacked:true,standardFontDataUrl:PDFJS_ASSETS+'standard_fonts/'}).promise; }
+/* raster dims a page WILL have once rendered — cheap, no rasterizing */
+function pageDims(vp,maxPx){ const s=Math.min(maxPx/vp.width,maxPx/vp.height,3); return {w:Math.round(vp.width*s),h:Math.round(vp.height*s),s}; }
+async function renderPdfPage(pdf,i,maxPx){
+  const page=await pdf.getPage(i+1); const d=pageDims(page.getViewport({scale:1}),maxPx);
+  const vp=page.getViewport({scale:d.s});
+  const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height);
+  await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+  const rec={dataURL:c.toDataURL('image/jpeg',maxPx<=THUMB_MAX?0.6:0.85),w:c.width,h:c.height};
+  c.width=c.height=0; if(page.cleanup) page.cleanup();          // release the backing store
+  return rec;
+}
+/* pull the sheet number out of the title block. Restricted to the title-block corner,
+   because grid bubbles ("Q.1", "T.8") out on the drawing match the same pattern. */
+const SHEET_STRONG=/^[A-Z]{1,3}-?\d{2,3}(\.\d+)?$/;
+function sheetScore(t,size){ let s=size/50; if(t.indexOf('-')>=0)s+=6; if(SHEET_STRONG.test(t))s+=3; if(t.length>=4)s+=2; return s; }
+async function sheetLabel(pdf,i){
+  try{
+    const page=await pdf.getPage(i+1), vp=page.getViewport({scale:1});
+    const tc=await page.getTextContent(); let best=null;
+    (tc.items||[]).forEach(it=>{
+      const t=(it.str||'').trim().toUpperCase().replace(/\s+/g,'');
+      if(!t||t.length>10||!SHEET_RE.test(t)) return;
+      const tr=it.transform||[], x=tr[4]||0, y=tr[5]||0, size=Math.abs(tr[3]||tr[0]||0);
+      // right edge, top or bottom band — covers both of pdf.js's y conventions
+      if(!(x>vp.width*0.70&&(y<vp.height*0.20||y>vp.height*0.80))) return;
+      const s=sheetScore(t,size); if(!best||s>best.s) best={t:t.replace('–','-'),s};
+    });
+    if(page.cleanup) page.cleanup();
+    return best?best.t:null;
+  }catch(e){ return null; }
+}
+/* Only trust the detected set if it reads like a real sheet index. A takeoff export with no
+   title blocks yields mostly repeats — better to fall back to "Page N" than to label sheets wrongly. */
+function trustLabels(labs){ if(!labs.length) return false;
+  const hits=labs.filter(Boolean); if(hits.length<labs.length*0.4) return false;
+  const uniq={}; hits.forEach(h=>{uniq[h]=1;});
+  return Object.keys(uniq).length>=hits.length*0.6; }
+/* image upload → a one-sheet set */
+async function rasterizeImage(file){
   const url=await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(file); });
   const img=await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; });
-  const s=Math.min(MAX/img.width,MAX/img.height,1), w=Math.round(img.width*s), h=Math.round(img.height*s);
+  const s=Math.min(PLAN_MAX/img.width,PLAN_MAX/img.height,1), w=Math.round(img.width*s), h=Math.round(img.height*s);
   const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
-  return {dataURL:c.toDataURL('image/jpeg',0.85),w,h}; }
+  return {dataURL:c.toDataURL('image/jpeg',0.85),w,h};
+}
+function loadImg(src){ return new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=src; }); }
+const idle=(ms)=>new Promise(r=>setTimeout(r,ms));
 
 /* ═══════════ ICONS (Lucide-style, stroke 1.5) ═══════════ */
 const P={
@@ -501,7 +616,11 @@ const P={
   polyline:'M3 18l6-6 4 4 8-8', poly:'M12 2 22 8.5v7L12 22 2 15.5v-7z',
   pin:'M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12zM12 8a2.5 2.5 0 100 5 2.5 2.5 0 000-5z',
   eye:'M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6zM12 9a3 3 0 100 6 3 3 0 000-6z',
-  upload:'M12 15V3M7 8l5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2', undo:'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-4'
+  upload:'M12 15V3M7 8l5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2', undo:'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-4',
+  fwd:'m9 18 6-6-6-6',
+  expand:'M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3',
+  shrink:'M8 3v3a2 2 0 0 1-2 2H3M16 3v3a2 2 0 0 0 2 2h3M8 21v-3a2 2 0 0 0-2-2H3M16 21v-3a2 2 0 0 1 2-2h3',
+  keys:'M2 6h20v12H2zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10'
 };
 function Icon({n,s=18,c}){
   const extra=[];
@@ -1056,37 +1175,89 @@ function CraneTab({onSave,onTakeoff}){
 }
 
 /* ═══════════ PLAN TAKEOFF (on-screen measure) ═══════════ */
-const PLAN_INFO={pan:'Drag to pan, wheel/pinch to zoom. Load a plan, then pick a measure tool.',scale:'Click two points on a known dimension, then type its real length. Sets the drawing scale.',count:'Click to drop a marker on each item (columns, footings, embeds). → EA.',line:'Click along a path; double-click or Finish to close. → LF.',area:'Click the corners of an area; double-click or Finish. → SF.',volume:'Outline an area + set a thickness → concrete volume in CY.'};
+/* ═══════════ PLAN TAKEOFF (multi-sheet on-screen measure) ═══════════ */
+const PLAN_INFO={pan:'Drag to pan, wheel to zoom. Load a drawing set, then pick a measure tool.',scale:'Click two points on a known dimension, then type its real length. Scale is saved per sheet.',count:'Click to drop a marker on each item (columns, footings, embeds). → EA.',line:'Click along a path; hold Shift for ortho. Double-click or Enter to finish. → LF.',area:'Click the corners of an area; double-click or Enter to finish. → SF.',volume:'Outline an area + set a thickness → concrete volume in CY.'};
+const KEYS=[
+  ['View',[['Full screen',['F']],['Cancel · back to Pan',['Esc']],['Fit sheet',['0']],['Fit width',['W']],['Zoom in / out',['+','–']],['Temporary pan',['Space','+ drag']],['Ortho while drawing',['Shift']],['Dim the drawing',['D']]]],
+  ['Sheets',[['Next / prev sheet',[']','[']],['Next / prev sheet',['PgDn','PgUp']],['First / last sheet',['Home','End']],['Go to sheet',['G']],['Show / hide sheet rail',['T']]]],
+  ['Tools',[['Pan',['1']],['Scale',['2','S']],['Count',['3','C']],['Linear',['4','L']],['Area',['5','A']],['Volume',['6','V']]]],
+  ['Markup',[['Finish measurement',['Enter']],['Undo point · last measure',['Bksp']],['Undo',['Ctrl/⌘','Z']],['Add all to estimate',['Ctrl/⌘','Enter']],['This cheat sheet',['?']]]]
+];
 function PlanTakeoff({project,pid,setPlan,onTakeoff,toast}){
   const rookie=useContext(RookieCtx);
-  const plan=project.plan||{}; const measures=plan.measures||{}; const ppf=plan.scale&&plan.scale.ppf; const W=(plan.dims&&plan.dims.w)||1, H=(plan.dims&&plan.dims.h)||1;
+  const plan=project.plan||{}; const measures=plan.measures||{};
   const scope=SCOPES[project.meta.scope]||SCOPES.tower;
+  /* ---- the sheet set. Legacy single-page projects fall back to plan.dims / plan.scale ---- */
+  const pages=(plan.pages&&plan.pages.length)?plan.pages
+    :(plan.hasImg?[{w:(plan.dims&&plan.dims.w)||1,h:(plan.dims&&plan.dims.h)||1,label:'Page 1'}]:[]);
+  const nPages=pages.length;
+  const cur=Math.min(Math.max(plan.cur||0,0),Math.max(0,nPages-1));
+  const pg=pages[cur]||{}; const W=pg.w||1, H=pg.h||1;
+  const scaleOf=(i)=>(plan.scales&&plan.scales[i])||(i===0?plan.scale:null)||null;
+  const curScale=scaleOf(cur); const ppf=curScale&&curScale.ppf;
+  const pageOf=(m)=>Math.min(Math.max(m.page||0,0),Math.max(0,nPages-1));
+  // qty = measured geometry × the row's multiplier (measure one typical bay, then say how many)
+  const multOf=(m)=>{const v=parseFloat(m.mult); return v>0?v:1;};
+  const qtyOf=(m)=>{const i=pageOf(m),p=pages[i]||{},s=scaleOf(i);return measQty(m,p.w||1,p.h||1,s&&s.ppf)*multOf(m);};
+  const descOf=(m)=>{const mu=multOf(m), sh=nPages>1?((pages[pageOf(m)]||{}).label||('Page '+(pageOf(m)+1)))+' · ':'';
+    return sh+m.label+(mu!==1?' ×'+round(mu,2):'');};
+
   const [tool,setTool]=useState('pan'); const [cat,setCat]=useState(scope.cats[0]); const [depth,setDepth]=useState(8);
-  const [busy,setBusy]=useState(false); const [dragOver,setDragOver]=useState(false); const [tick,setTick]=useState(0);
+  const [busy,setBusy]=useState(false); const [busyMsg,setBusyMsg]=useState(''); const [dragOver,setDragOver]=useState(false); const [tick,setTick]=useState(0);
   const [scaleAsk,setScaleAsk]=useState(null); const [scaleFt,setScaleFt]=useState('');
-  const cvRef=useRef(null), wrapRef=useRef(null), imgRef=useRef(null), viewRef=useRef({ox:0,oy:0,sc:1}), draftRef=useRef([]), hoverRef=useRef(null), panRef=useRef(null), redrawRef=useRef(()=>{});
+  const [thumbs,setThumbs]=useState([]); const [rail,setRail]=useState(true); const [pageBusy,setPageBusy]=useState(false); const [missing,setMissing]=useState(false);
+  const [fs,setFs]=useState(false); const [showKeys,setShowKeys]=useState(false); const [allSheets,setAllSheets]=useState(false); const [grab,setGrab]=useState(false);
+  const cvRef=useRef(null), wrapRef=useRef(null), shellRef=useRef(null), imgRef=useRef(null), sheetInRef=useRef(null);
+  const viewRef=useRef({ox:0,oy:0,sc:1}), draftRef=useRef([]), hoverRef=useRef(null), panRef=useRef(null), redrawRef=useRef(()=>{});
+  const pdfRef=useRef(null), pdfOpening=useRef(null), thumbTok=useRef(0), spaceRef=useRef(false), sizeRef=useRef({w:0,h:0}), keyRef=useRef(()=>{}), resizeRef=useRef(()=>{}), fitRef=useRef(()=>{}), zoomed=useRef(false);
   const bump=()=>setTick(t=>t+1);
   const scr=(p)=>{const v=viewRef.current;return [v.ox+p[0]*W*v.sc, v.oy+p[1]*H*v.sc];};
   const nrm=(x,y)=>{const v=viewRef.current;return [(x-v.ox)/(W*v.sc),(y-v.oy)/(H*v.sc)];};
-  function fit(){ const wr=wrapRef.current,img=imgRef.current; if(!wr)return; const cw=wr.clientWidth,ch=wr.clientHeight; if(img){ const sc=Math.min(cw/W,ch/H)*0.94; viewRef.current={sc,ox:(cw-W*sc)/2,oy:(ch-H*sc)/2}; } }
+
+  /* ---- view ---- */
+  function fit(w,h){ const wr=wrapRef.current; if(!wr||!imgRef.current)return; const ww=w||W,hh=h||H;
+    const cw=wr.clientWidth,ch=wr.clientHeight,sc=Math.min(cw/ww,ch/hh)*0.94; viewRef.current={sc,ox:(cw-ww*sc)/2,oy:(ch-hh*sc)/2};
+    zoomed.current=false; }                     // still "auto" — a later resize may re-fit
+  fitRef.current=fit;
+  function fitWidth(){ const wr=wrapRef.current; if(!wr||!imgRef.current)return;
+    const cw=wr.clientWidth,sc=(cw/W)*0.985; viewRef.current={sc,ox:(cw-W*sc)/2,oy:10}; zoomed.current=true; }
+  function zoomCenter(f){ const wr=wrapRef.current; if(!wr)return; const v=viewRef.current,cx=wr.clientWidth/2,cy=wr.clientHeight/2;
+    const ns=Math.max(0.05,Math.min(v.sc*f,40)); v.ox=cx-(cx-v.ox)*(ns/v.sc); v.oy=cy-(cy-v.oy)*(ns/v.sc); v.sc=ns; zoomed.current=true; redrawRef.current(); }
+  /* Scale the view WITH the container, anchored on its centre — so the drawing keeps the same
+     relative size through a rail toggle, a wrapping toolbar, or entering full screen. */
+  function onResize(){ const wr=wrapRef.current; if(!wr)return;
+    const cw=wr.clientWidth,ch=wr.clientHeight,s=sizeRef.current,had=!!(s.w&&s.h);
+    const changed=!had||cw!==s.w||ch!==s.h;
+    sizeRef.current={w:cw,h:ch};
+    if(changed&&cw&&ch&&imgRef.current){
+      if(!zoomed.current) fit();                                   // untouched view: just re-fit to the new box
+      else if(had){                                                // user has zoomed: keep their view, scaled about the centre
+        const v=viewRef.current, k=Math.min(cw/s.w,ch/s.h);
+        const cx=(s.w/2-v.ox)/(W*v.sc), cy=(s.h/2-v.oy)/(H*v.sc);
+        v.sc=Math.max(0.05,Math.min(v.sc*k,40)); v.ox=cw/2-cx*W*v.sc; v.oy=ch/2-cy*H*v.sc;
+      }
+    }
+    redrawRef.current(); }
+  resizeRef.current=onResize;
+
   function redraw(){ const cv=cvRef.current,wr=wrapRef.current; if(!cv||!wr)return; const dpr=window.devicePixelRatio||1, cw=wr.clientWidth,ch=wr.clientHeight;
-    if(cv.width!==Math.round(cw*dpr)){cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);} const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,cw,ch);
+    if(cv.width!==Math.round(cw*dpr)||cv.height!==Math.round(ch*dpr)){cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);}
+    const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,cw,ch);
     const img=imgRef.current,v=viewRef.current;
     if(img){ g.globalAlpha=plan.hideImg?0:(plan.dimImg?0.35:1); g.drawImage(img,v.ox,v.oy,W*v.sc,H*v.sc); g.globalAlpha=1; }
     const css=getComputedStyle(document.documentElement),col=(x)=>css.getPropertyValue(x).trim();
     const acc=col('--accent'),ok=col('--ok'),okk=col('--ok-ink'),warn=col('--warn');
     const TC={count:acc,line:'#22d3ee',area:okk,volume:warn};
-    // saved measures
-    Object.values(measures).forEach(m=>{ if(m.hidden)return; const c=TC[m.type]||acc; g.strokeStyle=c; g.fillStyle=hexA(c,.16); g.lineWidth=2;
+    // saved measures — this sheet only
+    Object.values(measures).forEach(m=>{ if(m.hidden||(m.page||0)!==cur)return; const c=TC[m.type]||acc; g.strokeStyle=c; g.fillStyle=hexA(c,.16); g.lineWidth=2;
       const ps=m.pts.map(scr);
       if(m.type==='count'){ ps.forEach(p=>{ g.beginPath();g.arc(p[0],p[1],5,0,7);g.fillStyle=c;g.fill();g.strokeStyle='#fff';g.lineWidth=1.5;g.stroke(); }); }
       else if(m.type==='line'){ g.beginPath();ps.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke(); ps.forEach(p=>{g.beginPath();g.arc(p[0],p[1],3,0,7);g.fillStyle=c;g.fill();}); }
       else{ if(ps.length){ g.beginPath();ps.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill();g.stroke(); } }
-      // label at centroid
       if(ps.length){ const cx=ps.reduce((s,p)=>s+p[0],0)/ps.length, cy=ps.reduce((s,p)=>s+p[1],0)/ps.length; g.fillStyle=c; g.font='600 11px Barlow'; g.textAlign='center'; g.fillText(m.label||'',cx,cy); }
     });
-    // scale line
-    if(plan.scale&&plan.scale.calPts){ const a=scr(plan.scale.calPts[0]),b=scr(plan.scale.calPts[1]); g.strokeStyle=warn;g.lineWidth=2;g.setLineDash([5,4]); g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();g.setLineDash([]); }
+    // scale line for this sheet
+    if(curScale&&curScale.calPts){ const a=scr(curScale.calPts[0]),b=scr(curScale.calPts[1]); g.strokeStyle=warn;g.lineWidth=2;g.setLineDash([5,4]); g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();g.setLineDash([]); }
     // draft
     const d=draftRef.current, hov=hoverRef.current;
     if(d.length||(['scale','count','line','area','volume'].indexOf(tool)>=0&&hov)){ const c=tool==='scale'?warn:(TC[tool]||acc); g.strokeStyle=c;g.fillStyle=hexA(c,.14);g.lineWidth=2; const ps=d.map(scr);
@@ -1095,13 +1266,103 @@ function PlanTakeoff({project,pid,setPlan,onTakeoff,toast}){
     }
   }
   redrawRef.current=redraw;
-  // load raster from IndexedDB on project change
-  useEffect(()=>{ let alive=true; (async()=>{ if(plan.hasImg){ let rec=await idbGet('okt_plan_'+pid); if(!rec&&window.fb){ try{ rec=await window.fb.get('plans/'+pid); if(rec) idbPut('okt_plan_'+pid,rec); }catch(e){} } if(alive&&rec){ const im=new Image(); im.onload=()=>{ imgRef.current=im; fit(); redrawRef.current(); }; im.src=rec.dataURL; } } else { imgRef.current=null; } redrawRef.current(); })(); return ()=>{alive=false;}; },[pid,plan.hasImg]);
-  useEffect(()=>{ redrawRef.current(); },[tick,tool,project.plan]);
-  useEffect(()=>{ const cv=cvRef.current; if(!cv)return; const onWheel=(e)=>{ e.preventDefault(); const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,v=viewRef.current,f=Math.exp(-e.deltaY*0.0015),ns=Math.max(0.05,Math.min(v.sc*f,40)); v.ox=mx-(mx-v.ox)*(ns/v.sc); v.oy=my-(my-v.oy)*(ns/v.sc); v.sc=ns; redrawRef.current(); }; cv.addEventListener('wheel',onWheel,{passive:false}); const onR=()=>redrawRef.current(); window.addEventListener('resize',onR); return ()=>{cv.removeEventListener('wheel',onWheel);window.removeEventListener('resize',onR);}; },[]);
+
+  /* ---- sheet source: IDB cache → cloud → render from the stored PDF ---- */
+  // one open document per project — the sheet loader and the thumbnail loop both want it
+  async function ensurePDF(){ if(pdfRef.current) return pdfRef.current;
+    if(!pdfOpening.current) pdfOpening.current=(async()=>{
+      const src=await idbGet('okt_src_'+pid); if(!src||!src.blob) return null;
+      try{ pdfRef.current=await openPDFBlob(src.blob); }catch(e){ pdfRef.current=null; }
+      return pdfRef.current; })();
+    const doc=await pdfOpening.current; pdfOpening.current=null; return doc; }
+  function pushPage(i,rec){ if(!window.fb||!navigator.onLine||!rec||!rec.dataURL) return;
+    if(rec.dataURL.length>PUSH_MAX) return;                       // too fat for RTDB — stays device-local
+    window.fb.set('planPages/'+pid+'/'+i,rec).catch(()=>{}); }
+  async function fetchPage(i){
+    const key='okt_page_'+pid+'_'+i;
+    let rec=await idbGet(key);
+    if(!rec&&i===0) rec=await idbGet('okt_plan_'+pid);                                   // legacy local raster
+    if(!rec&&window.fb){
+      try{ rec=await window.fb.get('planPages/'+pid+'/'+i); }catch(e){}
+      if(!rec&&i===0){ try{ rec=await window.fb.get('plans/'+pid); }catch(e){} }         // legacy cloud raster
+      if(rec) idbPut(key,rec);
+    }
+    if(!rec){ const pdf=await ensurePDF();
+      if(pdf){ try{ rec=await renderPdfPage(pdf,i,PLAN_MAX); idbPut(key,rec); pushPage(i,rec); }catch(e){} } }
+    return rec;
+  }
 
   const savePlan=(patch)=>setPlan({...plan,...patch});
   const setMeasures=(m)=>savePlan({measures:m});
+  function patchPage(i,patch){ const pgs=pages.map((p,x)=>x===i?{...p,...patch}:p); savePlan({pages:pgs,pageCount:pgs.length}); }
+  function goPage(i){ if(!nPages)return; const n=Math.min(Math.max(i,0),nPages-1); if(n===cur)return;
+    draftRef.current=[]; hoverRef.current=null; setScaleAsk(null); setScaleFt(''); savePlan({cur:n,pages,pageCount:nPages}); }
+
+  // load the current sheet
+  useEffect(()=>{ let alive=true;
+    (async()=>{
+      if(!nPages){ imgRef.current=null; setMissing(false); redrawRef.current(); return; }
+      setPageBusy(true);
+      const rec=await fetchPage(cur); if(!alive)return;
+      if(rec){ try{ const im=await loadImg(rec.dataURL); if(!alive)return; imgRef.current=im; setMissing(false); fit(rec.w,rec.h);
+                     if(pg.w!==rec.w||pg.h!==rec.h) patchPage(cur,{w:rec.w,h:rec.h}); }
+               catch(e){ imgRef.current=null; setMissing(true); } }
+      else { imgRef.current=null; setMissing(true); }
+      if(!alive)return; redrawRef.current(); setPageBusy(false);
+    })();
+    return ()=>{alive=false;};
+  },[pid,cur,nPages]);
+
+  // thumbnails: fill in one sheet at a time in the background
+  useEffect(()=>{ let alive=true; const tok=++thumbTok.current;
+    (async()=>{
+      if(nPages<2){ setThumbs([]); return; }
+      const cached=await idbGet('okt_thumbs_'+pid);
+      let arr=(Array.isArray(cached)&&cached.length===nPages)?cached.slice():new Array(nPages).fill(null);
+      if(!alive||thumbTok.current!==tok) return; setThumbs(arr.slice());
+      if(arr.every(x=>x)) return;
+      const pdf=await ensurePDF(); if(!pdf||!alive||thumbTok.current!==tok) return;
+      for(let i=0;i<nPages;i++){
+        if(!alive||thumbTok.current!==tok) return;
+        if(arr[i]) continue;
+        try{ const t=await renderPdfPage(pdf,i,THUMB_MAX); arr[i]=t.dataURL; }catch(e){ arr[i]=''; }
+        if(!alive||thumbTok.current!==tok) return;
+        setThumbs(arr.slice());
+        if(i%5===4) idbPut('okt_thumbs_'+pid,arr.slice());   // checkpoint, so a reload resumes instead of restarting
+        await idle(24);                                       // yield — keeps the tab responsive and the fans quiet
+      }
+      idbPut('okt_thumbs_'+pid,arr);
+    })();
+    return ()=>{alive=false;};
+  },[pid,nPages]);
+
+  // drop the open PDF when the project changes
+  useEffect(()=>()=>{ thumbTok.current++; pdfOpening.current=null; if(pdfRef.current){ try{pdfRef.current.destroy();}catch(e){} pdfRef.current=null; } },[pid]);
+
+  useEffect(()=>{ redrawRef.current(); },[tick,tool,project.plan]);
+  useEffect(()=>{ const cv=cvRef.current; if(!cv)return;
+    const onWheel=(e)=>{ e.preventDefault(); const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,v=viewRef.current,f=Math.exp(-e.deltaY*0.0015),ns=Math.max(0.05,Math.min(v.sc*f,40));
+      v.ox=mx-(mx-v.ox)*(ns/v.sc); v.oy=my-(my-v.oy)*(ns/v.sc); v.sc=ns; zoomed.current=true; redrawRef.current(); };
+    cv.addEventListener('wheel',onWheel,{passive:false}); return ()=>cv.removeEventListener('wheel',onWheel); },[]);
+  // resize: ResizeObserver catches class-driven changes that fire no window resize (fullscreen, rail toggle)
+  useEffect(()=>{ const wr=wrapRef.current; if(!wr)return; const h=()=>resizeRef.current();
+    let ro=null; if(window.ResizeObserver){ ro=new ResizeObserver(h); ro.observe(wr); }
+    window.addEventListener('resize',h);
+    return ()=>{ if(ro)ro.disconnect(); window.removeEventListener('resize',h); }; },[]);
+  useEffect(()=>{ const h=()=>{ setFs(!!(document.fullscreenElement||document.webkitFullscreenElement));
+      // the shell resizes over a frame or two; re-fit once it has settled so the sheet fills the screen
+      const go=()=>{ const wr=wrapRef.current; if(!wr)return; sizeRef.current={w:wr.clientWidth,h:wr.clientHeight}; fitRef.current(); redrawRef.current(); };
+      setTimeout(go,0); setTimeout(go,150); };                     // setTimeout, not rAF — rAF is skipped when rendering is throttled
+    document.addEventListener('fullscreenchange',h); document.addEventListener('webkitfullscreenchange',h);
+    return ()=>{ document.removeEventListener('fullscreenchange',h); document.removeEventListener('webkitfullscreenchange',h); }; },[]);
+
+  /* ---- tools ---- */
+  function selectTool(k){ setTool(k); draftRef.current=[]; hoverRef.current=null; redrawRef.current(); }
+  function cancelDraft(){ draftRef.current=[]; hoverRef.current=null; redrawRef.current(); bump(); }
+  function snapPt(nx,ny){ const d=draftRef.current; if(!d.length)return [nx,ny];
+    const p=d[d.length-1],dx=(nx-p[0])*W,dy=(ny-p[1])*H,len=Math.hypot(dx,dy);
+    const q=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*(Math.PI/4);
+    return [p[0]+Math.cos(q)*len/W, p[1]+Math.sin(q)*len/H]; }
   function addPoint(nx,ny){ const d=draftRef.current;
     if(tool==='scale'){ d.push([nx,ny]); if(d.length===2){ setScaleAsk([d[0],d[1]]); draftRef.current=[]; } redrawRef.current(); bump(); return; }
     d.push([nx,ny]); redrawRef.current(); bump();
@@ -1109,58 +1370,206 @@ function PlanTakeoff({project,pid,setPlan,onTakeoff,toast}){
   function finishDraft(){ const d=draftRef.current; if(!d.length)return;
     if(tool==='line'&&d.length<2){draftRef.current=[];bump();return;} if((tool==='area'||tool==='volume')&&d.length<3){draftRef.current=[];bump();return;}
     const n=Object.values(measures).filter(m=>m.type===tool).length+1; const id=uid('m');
-    const m={id,type:tool,pts:d.slice(),category:cat,label:(tool[0].toUpperCase()+tool.slice(1))+' '+n,unit:TOOL_UNIT[tool],ts:Date.now(),added:false,hidden:false}; if(tool==='volume')m.depthIn=depth;
+    const m={id,type:tool,pts:d.slice(),page:cur,category:cat,label:(tool[0].toUpperCase()+tool.slice(1))+' '+n,unit:TOOL_UNIT[tool],ts:Date.now(),added:false,hidden:false}; if(tool==='volume')m.depthIn=depth;
     setMeasures({...measures,[id]:m}); draftRef.current=[]; hoverRef.current=null; bump();
   }
-  function commitScale(){ const p=scaleAsk, ft=parseFloat(scaleFt); if(p&&ft>0){ const px=Math.hypot((p[1][0]-p[0][0])*W,(p[1][1]-p[0][1])*H); savePlan({scale:{ppf:px/ft,calPts:p}}); toast('Scale set: '+round(px/ft,1)+' px/ft'); } setScaleAsk(null); setScaleFt(''); setTool('count'); }
-  // pointer (pan on drag, add point on click)
-  function pd(e){ e.currentTarget.setPointerCapture(e.pointerId); const r=e.currentTarget.getBoundingClientRect(); panRef.current={x:e.clientX-r.left,y:e.clientY-r.top,ox:viewRef.current.ox,oy:viewRef.current.oy,moved:false}; }
+  function commitScale(){ const p=scaleAsk, ft=parseFloat(scaleFt);
+    if(p&&ft>0){ const px=Math.hypot((p[1][0]-p[0][0])*W,(p[1][1]-p[0][1])*H);
+      savePlan({scales:{...(plan.scales||{}),[cur]:{ppf:px/ft,calPts:p}}});
+      toast((nPages>1?(pg.label||'Sheet '+(cur+1))+' — ':'')+'scale set: '+round(px/ft,1)+' px/ft'); }
+    setScaleAsk(null); setScaleFt(''); selectTool('count'); }
+  function undo(){ if(draftRef.current.length){ draftRef.current.pop(); redrawRef.current(); bump(); return; }
+    const list=Object.values(measures).filter(m=>(m.page||0)===cur).sort((a,b)=>(b.ts||0)-(a.ts||0));
+    if(!list.length)return; const mm={...measures}; delete mm[list[0].id]; setMeasures(mm); toast('Removed '+list[0].label); }
+  function toggleFs(){ const el=shellRef.current; if(!el)return;
+    try{ if(document.fullscreenElement||document.webkitFullscreenElement){ const x=document.exitFullscreen||document.webkitExitFullscreen; if(x) x.call(document); }
+         else { const r=el.requestFullscreen||el.webkitRequestFullscreen; if(!r){toast('Full screen not supported here');return;} const p=r.call(el); if(p&&p.catch)p.catch(()=>toast('Full screen blocked by the browser')); } }
+    catch(e){ toast('Full screen not available'); } }
+  function focusSheet(){ const el=sheetInRef.current; if(el){ el.focus(); el.select(); } }
+
+  /* ---- pointer: drag pans, click places, Space forces pan, Shift snaps to ortho ---- */
+  function pd(e){ e.currentTarget.setPointerCapture(e.pointerId); const r=e.currentTarget.getBoundingClientRect();
+    panRef.current={x:e.clientX-r.left,y:e.clientY-r.top,ox:viewRef.current.ox,oy:viewRef.current.oy,moved:false,force:spaceRef.current}; }
   function pm(e){ const r=e.currentTarget.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,p=panRef.current;
-    if(p){ const dx=x-p.x,dy=y-p.y; if(Math.abs(dx)+Math.abs(dy)>4)p.moved=true; if(p.moved){viewRef.current.ox=p.ox+dx;viewRef.current.oy=p.oy+dy;redrawRef.current();} }
-    else if(imgRef.current&&['scale','line','area','volume'].indexOf(tool)>=0){ hoverRef.current=nrm(x,y); redrawRef.current(); }
+    if(p){ const dx=x-p.x,dy=y-p.y; if(Math.abs(dx)+Math.abs(dy)>4)p.moved=true; if(p.moved||p.force){viewRef.current.ox=p.ox+dx;viewRef.current.oy=p.oy+dy;zoomed.current=true;redrawRef.current();} }
+    else if(imgRef.current&&['scale','line','area','volume'].indexOf(tool)>=0){ const n=nrm(x,y); hoverRef.current=e.shiftKey?snapPt(n[0],n[1]):n; redrawRef.current(); }
   }
-  function pu(e){ const p=panRef.current; panRef.current=null; if(!p)return; if(p.moved||tool==='pan'||!imgRef.current)return;
-    const r=e.currentTarget.getBoundingClientRect(); const [nx,ny]=nrm(e.clientX-r.left,e.clientY-r.top); if(nx<0||ny<0||nx>1||ny>1)return; addPoint(nx,ny);
+  function pu(e){ const p=panRef.current; panRef.current=null; if(!p)return; if(p.moved||p.force||tool==='pan'||!imgRef.current)return;
+    const r=e.currentTarget.getBoundingClientRect(); const raw=nrm(e.clientX-r.left,e.clientY-r.top);
+    if(raw[0]<0||raw[1]<0||raw[0]>1||raw[1]>1)return;
+    const q=(e.shiftKey&&tool!=='count')?snapPt(raw[0],raw[1]):raw; addPoint(q[0],q[1]);
   }
-  async function onFile(file){ if(!file)return; setBusy(true); try{ const rec=await rasterizePlan(file); await idbPut('okt_plan_'+pid,rec); if(window.fb) window.fb.set('plans/'+pid,rec).then(()=>toast('Plan synced to cloud')).catch(()=>{}); const im=new Image(); im.onload=()=>{ imgRef.current=im; savePlan({hasImg:true,dims:{w:rec.w,h:rec.h}}); fit(); redrawRef.current(); }; im.src=rec.dataURL; toast('Plan loaded'); }catch(e){ toast('Could not load: '+e.message); } setBusy(false); }
+  async function onFile(file){ if(!file)return; setBusy(true);
+    try{
+      thumbTok.current++;
+      if(pdfRef.current){ try{pdfRef.current.destroy();}catch(e){} pdfRef.current=null; }
+      pdfOpening.current=null;
+      if(file.type==='application/pdf'){
+        setBusyMsg('Opening…');
+        const blob=file.slice(0,file.size,'application/pdf');
+        await idbPut('okt_src_'+pid,{blob,name:file.name});
+        const pdf=await openPDFBlob(blob); pdfRef.current=pdf;
+        const n=pdf.numPages, pgs=[];
+        setBusyMsg('Reading '+n+' sheet'+(n>1?'s':'')+'…');
+        for(let i=0;i<n;i++){ const p=await pdf.getPage(i+1), d=pageDims(p.getViewport({scale:1}),PLAN_MAX);
+          if(p.cleanup)p.cleanup(); pgs.push({w:d.w,h:d.h,label:'Page '+(i+1)}); }
+        const labs=[]; for(let i=0;i<n;i++){ labs.push(await sheetLabel(pdf,i)); if(i%8===7) await idle(0); }
+        if(trustLabels(labs)) labs.forEach((lb,i)=>{ if(lb) pgs[i].label=lb; });
+        setBusyMsg('Rendering sheet 1…');
+        const rec=await renderPdfPage(pdf,0,PLAN_MAX);
+        await idbPut('okt_page_'+pid+'_0',rec); pushPage(0,rec);
+        await idbPut('okt_thumbs_'+pid,new Array(n).fill(null));
+        imgRef.current=await loadImg(rec.dataURL); setMissing(false);
+        savePlan({hasImg:true,pages:pgs,pageCount:n,cur:0,dims:{w:rec.w,h:rec.h},scales:{},scale:null});
+        fit(rec.w,rec.h); redrawRef.current();
+        toast(n>1?(n+' sheets loaded — set the scale on each'):'Plan loaded — set the scale');
+      } else {
+        const rec=await rasterizeImage(file);
+        await idbPut('okt_page_'+pid+'_0',rec); await idbPut('okt_plan_'+pid,rec); pushPage(0,rec);
+        await idbPut('okt_thumbs_'+pid,[]);
+        imgRef.current=await loadImg(rec.dataURL); setMissing(false);
+        savePlan({hasImg:true,pages:[{w:rec.w,h:rec.h,label:(file.name||'').replace(/\.[^.]+$/,'').slice(0,16)||'Page 1'}],pageCount:1,cur:0,dims:{w:rec.w,h:rec.h},scales:{},scale:null});
+        fit(rec.w,rec.h); redrawRef.current();
+        toast('Plan loaded — set the scale');
+      }
+    }catch(e){ toast('Could not load: '+(e.message||e)); }
+    setBusy(false); setBusyMsg('');
+  }
 
   const draftLive=()=>{ const d=draftRef.current; if(!d.length)return null; if(tool==='count')return {q:d.length,u:'EA'}; if(tool==='line')return {q:round(segLenFt(d,W,H,ppf),1),u:'LF'}; if(tool==='area')return {q:round(areaFt(d,W,H,ppf),0),u:'SF'}; if(tool==='volume')return {q:round(areaFt(d,W,H,ppf)*(depth/12)/27,2),u:'CY'}; return null; };
   const live=draftLive();
-  const mlist=Object.values(measures).sort((a,b)=>(b.ts||0)-(a.ts||0));
-  const addM=(m)=>{ const q=round(measQty(m,W,H,ppf),m.unit==='CY'?2:(m.unit==='LF'?1:0)); if(!(q>0)){toast('Set scale first');return;} onTakeoff([{category:m.category,desc:m.label,qty:q,unit:m.unit}]); setMeasures({...measures,[m.id]:{...m,added:true}}); };
-  const TOOLS=[['pan','move','Pan'],['scale','crosshair','Scale'],['count','pin','Count'],['line','polyline','Linear'],['area','poly','Area'],['volume','box','Volume']];
+  const allM=Object.values(measures).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const mlist=allSheets?allM:allM.filter(m=>(m.page||0)===cur);
+  const marked={}; allM.forEach(m=>{marked[m.page||0]=1;});
+  const addM=(m)=>{ const q=round(qtyOf(m),m.unit==='CY'?2:(m.unit==='LF'?1:0)); if(!(q>0)){toast('Set the scale on that sheet first');return;}
+    onTakeoff([{category:m.category,desc:descOf(m),qty:q,unit:m.unit}]); setMeasures({...measures,[m.id]:{...m,added:true}}); };
+  function addAll(){ const pend=mlist.filter(m=>!m.added);
+    const items=pend.map(m=>({category:m.category,desc:descOf(m),qty:round(qtyOf(m),m.unit==='CY'?2:m.unit==='LF'?1:0),unit:m.unit})).filter(it=>it.qty>0);
+    if(!items.length){toast('Nothing to add — set the scale first');return;}
+    onTakeoff(items); const mm={...measures}; pend.forEach(m=>{if(qtyOf(m)>0)mm[m.id]={...mm[m.id],added:true};}); setMeasures(mm); }
+
+  /* ---- keyboard (Bluebeam-style). Latest-ref pattern so nothing goes stale. ---- */
+  function onKey(e){
+    const t=e.target, fld=!!(t&&(t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA'||t.isContentEditable));
+    if(e.key==='Escape'){ if(showKeys){setShowKeys(false);return;} if(fld){ if(t.blur)t.blur(); return; }
+      if(scaleAsk){setScaleAsk(null);setScaleFt('');} cancelDraft(); selectTool('pan'); return; }
+    if(fld) return;
+    const k=e.key, mod=e.metaKey||e.ctrlKey, stop=()=>e.preventDefault();
+    if(k===' '){ if(!spaceRef.current){spaceRef.current=true;setGrab(true);} stop(); return; }
+    if(mod){
+      if(k==='z'||k==='Z'){ stop(); undo(); }
+      else if(k==='Enter'){ stop(); addAll(); }
+      else if(k==='0'){ stop(); fit(); redrawRef.current(); }
+      else if(k==='1'){ stop(); fitWidth(); redrawRef.current(); }
+      else if(k==='g'||k==='G'){ stop(); focusSheet(); }
+      return;
+    }
+    if(e.altKey) return;
+    switch(k){
+      case 'f': case 'F': case 'F11': stop(); toggleFs(); return;
+      case '?': stop(); setShowKeys(s=>!s); return;
+      case '0': stop(); fit(); redrawRef.current(); return;
+      case 'w': case 'W': stop(); fitWidth(); redrawRef.current(); return;
+      case '+': case '=': stop(); zoomCenter(1.25); return;
+      case '-': case '_': stop(); zoomCenter(0.8); return;
+      case 'd': case 'D': if(nPages){stop(); savePlan({dimImg:!plan.dimImg});} return;
+      case 't': case 'T': if(nPages>1){stop(); setRail(r=>!r);} return;
+      case 'g': case 'G': if(nPages>1){stop(); focusSheet();} return;
+      case ']': case 'PageDown': stop(); goPage(cur+1); return;
+      case '[': case 'PageUp': stop(); goPage(cur-1); return;
+      case 'Home': stop(); goPage(0); return;
+      case 'End': stop(); goPage(nPages-1); return;
+      case 'Enter': if(draftRef.current.length){stop(); finishDraft();} return;
+      case 'Backspace': stop(); undo(); return;
+      case '1': stop(); selectTool('pan'); return;
+      case '2': case 's': case 'S': stop(); selectTool('scale'); return;
+      case '3': case 'c': case 'C': stop(); selectTool('count'); return;
+      case '4': case 'l': case 'L': stop(); selectTool('line'); return;
+      case '5': case 'a': case 'A': stop(); selectTool('area'); return;
+      case '6': case 'v': case 'V': stop(); selectTool('volume'); return;
+      default: return;
+    }
+  }
+  keyRef.current=onKey;
+  useEffect(()=>{ const kd=(e)=>keyRef.current(e); const ku=(e)=>{ if(e.key===' '){spaceRef.current=false;setGrab(false);} };
+    window.addEventListener('keydown',kd); window.addEventListener('keyup',ku);
+    return ()=>{ window.removeEventListener('keydown',kd); window.removeEventListener('keyup',ku); spaceRef.current=false; }; },[]);
+
+  const TOOLS=[['pan','move','Pan','1'],['scale','crosshair','Scale','2 · S'],['count','pin','Count','3 · C'],['line','polyline','Linear','4 · L'],['area','poly','Area','5 · A'],['volume','box','Volume','6 · V']];
+  const cursor=grab?'grabbing':(tool==='pan'?'grab':(imgRef.current?'crosshair':'default'));
   return <div>
-    <div className="plan-bar">
-      <div className="plan-tools">{TOOLS.map(([k,ic,lb])=><button key={k} className={tool===k?'on':''} onClick={()=>{setTool(k);draftRef.current=[];hoverRef.current=null;redrawRef.current();}} title={lb}><Icon n={ic} s={17}/><span className="tl">{lb}</span></button>)}</div>
-      <label className="b sec" style={{minHeight:44,cursor:'pointer'}}><Icon n="upload" s={16}/>{plan.hasImg?'Replace':'Load plan'}<input type="file" accept="image/*,application/pdf" style={{display:'none'}} onChange={e=>onFile(e.target.files[0])}/></label>
-      {plan.hasImg&&<><button className="b icon sec" title="Fit view" onClick={()=>{fit();redrawRef.current();}}><Icon n="crosshair" s={16}/></button>
-        <button className={'b icon sec'+(plan.dimImg?' on':'')} title="Dim plan" onClick={()=>savePlan({dimImg:!plan.dimImg})}><Icon n="eye" s={16}/></button></>}
-      <span style={{flex:1}}/>
-      <span className="field-lbl" style={{margin:0}}>Category</span>
-      <select className="f-sel" style={{width:150,minHeight:44}} value={cat} onChange={e=>setCat(e.target.value)}>{scope.cats.map(c=><option key={c}>{c}</option>)}</select>
-      {tool==='volume'&&<label className="f" style={{minHeight:44,width:130}}><span className="f-main"><span className="f-lbl">Thickness</span><input className="f-val" type="number" value={depth} onChange={e=>setDepth(parseFloat(e.target.value)||0)}/></span><span className="f-unit">in</span></label>}
+    <div className="plan-shell" ref={shellRef}>
+      <div className="plan-bar">
+        <div className="plan-tools">{TOOLS.map(([k,ic,lb,ky])=><button key={k} className={tool===k?'on':''} onClick={()=>selectTool(k)} title={lb+'  ('+ky+')'}><Icon n={ic} s={17}/><span className="tl">{lb}</span></button>)}</div>
+        <label className="b sec" style={{minHeight:44,cursor:'pointer'}}><Icon n="upload" s={16}/>{busy?(busyMsg||'Loading…'):(nPages?'Replace':'Load plan')}<input type="file" accept="image/*,application/pdf" style={{display:'none'}} onChange={e=>onFile(e.target.files[0])}/></label>
+        {nPages>0&&<>
+          <button className="b icon sec" title="Fit sheet  (0)" onClick={()=>{fit();redrawRef.current();}}><Icon n="crosshair" s={16}/></button>
+          <button className={'b icon sec'+(plan.dimImg?' on':'')} title="Dim the drawing  (D)" onClick={()=>savePlan({dimImg:!plan.dimImg})}><Icon n="eye" s={16}/></button>
+          <button className={'b icon sec'+(fs?' on':'')} title="Full screen  (F)" onClick={toggleFs}><Icon n={fs?'shrink':'expand'} s={16}/></button>
+          <button className="b icon sec" title="Keyboard shortcuts  (?)" onClick={()=>setShowKeys(true)}><Icon n="keys" s={16}/></button>
+        </>}
+        {nPages>1&&<div className="plan-sheet">
+          <button title="Previous sheet  ([)" disabled={cur<=0} onClick={()=>goPage(cur-1)}><Icon n="back" s={15}/></button>
+          <span className="lbl"><b>{pg.label||('Page '+(cur+1))}</b>
+            <input ref={sheetInRef} key={cur} className="shn" defaultValue={cur+1} title="Go to sheet  (G)"
+              onFocus={e=>e.target.select()}
+              onKeyDown={e=>{ if(e.key==='Enter'){const v=parseInt(e.target.value,10); if(v>=1&&v<=nPages)goPage(v-1); e.target.blur();} if(e.key==='Escape'){e.target.value=cur+1;e.target.blur();} }}
+              onBlur={e=>{e.target.value=cur+1;}}/>/{nPages}</span>
+          <button title="Next sheet  (])" disabled={cur>=nPages-1} onClick={()=>goPage(cur+1)}><Icon n="fwd" s={15}/></button>
+          <button className={rail?'on':''} title="Sheet rail  (T)" onClick={()=>setRail(r=>!r)}><Icon n="layers" s={15}/></button>
+        </div>}
+        <span style={{flex:1}}/>
+        <span className="plan-cat"><span className="field-lbl" style={{margin:0}}>Category</span>
+        <select className="f-sel" style={{width:150,minHeight:44}} value={cat} onChange={e=>setCat(e.target.value)}>{scope.cats.map(c=><option key={c}>{c}</option>)}</select></span>
+        {tool==='volume'&&<label className="f" style={{minHeight:44,width:130}}><span className="f-main"><span className="f-lbl">Thickness</span><input className="f-val" type="number" value={depth} onChange={e=>setDepth(parseFloat(e.target.value)||0)}/></span><span className="f-unit">in</span></label>}
+      </div>
+      {rookie&&!fs&&<div className="note" style={{marginBottom:10}}><b>{tool[0].toUpperCase()+tool.slice(1)}:</b> {PLAN_INFO[tool]} <span style={{color:'var(--mut)'}}>Press <b>?</b> for shortcuts.</span></div>}
+      {nPages>1&&rail&&<div className="plan-rail">{pages.map((p,i)=>
+        <button key={i} className={'plan-thumb'+(i===cur?' on':'')+(marked[i]?' has':'')} onClick={()=>goPage(i)} title={(p.label||('Page '+(i+1)))+'  —  sheet '+(i+1)+' of '+nPages}>
+          {thumbs[i]?<img className="tb" src={thumbs[i]} alt=""/>:<span className="tp">{i+1}</span>}
+          <span className="tn">{p.label||('Page '+(i+1))}</span>
+        </button>)}</div>}
+      <div className={'plan-canvas-wrap'+(dragOver?' drag':'')} ref={wrapRef}
+        onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
+        onDrop={e=>{e.preventDefault();setDragOver(false);onFile(e.dataTransfer.files[0]);}}>
+        <canvas ref={cvRef} style={{cursor}} onPointerDown={pd} onPointerMove={pm} onPointerUp={pu} onDoubleClick={()=>{if(['line','area','volume'].indexOf(tool)>=0)finishDraft();}}/>
+        <span className={'plan-scalechip'+(ppf?'':' warn')}><Icon n="crosshair" s={13}/>{ppf?<>{nPages>1?(pg.label||'Sheet '+(cur+1))+' — ':''}<b>{round(ppf,1)} px/ft</b></>:(nPages>1?'Scale not set on this sheet':'Scale not set')}</span>
+        {nPages>0&&<div className="plan-zoom"><button title="Zoom in  (+)" onClick={()=>zoomCenter(1.25)}>+</button><button title="Zoom out  (−)" onClick={()=>zoomCenter(0.8)}>−</button></div>}
+        {pageBusy&&<span className="plan-busy">Rendering sheet…</span>}
+        {!nPages&&<div className={'plan-drop'+(dragOver?' drag':'')}><Icon n="upload" s={30}/><div style={{fontFamily:'var(--hd)',fontWeight:600,fontSize:17,textTransform:'uppercase',color:'var(--ink)'}}>{busy?(busyMsg||'Loading…'):'Drop a drawing set or PDF'}</div><div style={{fontSize:12.5}}>PNG · JPG · multi-sheet PDF — then set the scale and measure</div><label className="b pri" style={{cursor:'pointer',marginTop:4}}><Icon n="upload" s={16}/>Choose file<input type="file" accept="image/*,application/pdf" style={{display:'none'}} onChange={e=>onFile(e.target.files[0])}/></label></div>}
+        {nPages>0&&missing&&!pageBusy&&<div className="plan-drop"><Icon n="file" s={28}/><div style={{fontFamily:'var(--hd)',fontWeight:600,fontSize:16,textTransform:'uppercase',color:'var(--ink)'}}>Sheet not cached on this device</div><div style={{fontSize:12.5,maxWidth:320}}>Open it once on the device you uploaded from, or load the set again here. Your measurements are safe either way.</div></div>}
+        {scaleAsk&&<div className="plan-actionbar"><span style={{fontSize:12,color:'var(--mut)'}}>Real length of that line?</span><input className="f-val" autoFocus style={{width:70,fontFamily:'var(--mo)',fontSize:16,borderBottom:'1px solid var(--accent)'}} type="number" value={scaleFt} onChange={e=>setScaleFt(e.target.value)} onKeyDown={e=>e.key==='Enter'&&commitScale()}/><span style={{fontFamily:'var(--mo)',fontSize:12,color:'var(--mut)'}}>ft</span><button className="b pri" style={{minHeight:38}} onClick={commitScale}>Set scale</button><button className="b sec" style={{minHeight:38}} onClick={()=>{setScaleAsk(null);setScaleFt('');}}>Cancel</button></div>}
+        {live&&!scaleAsk&&<div className="plan-actionbar"><span className="live">{live.q}<small> {live.u}</small></span><button className="b icon sec" title="Undo point  (Backspace)" style={{minHeight:38}} onClick={undo}><Icon n="undo" s={15}/></button>{tool!=='count'&&<button className="b pri" style={{minHeight:38}} onClick={finishDraft}><Icon n="check" s={15}/>Finish</button>}{tool==='count'&&<button className="b pri" style={{minHeight:38}} onClick={finishDraft}><Icon n="check" s={15}/>Save {draftRef.current.length}</button>}<button className="b sec" style={{minHeight:38}} onClick={cancelDraft}>Cancel</button></div>}
+      </div>
+      {showKeys&&<KeySheet onClose={()=>setShowKeys(false)}/>}
     </div>
-    {rookie&&<div className="note" style={{marginBottom:10}}><b>{tool[0].toUpperCase()+tool.slice(1)}:</b> {PLAN_INFO[tool]}</div>}
-    <div className="plan-canvas-wrap" ref={wrapRef}
-      onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)}
-      onDrop={e=>{e.preventDefault();setDragOver(false);onFile(e.dataTransfer.files[0]);}}>
-      <canvas ref={cvRef} style={{cursor:tool==='pan'?'grab':(imgRef.current?'crosshair':'default')}} onPointerDown={pd} onPointerMove={pm} onPointerUp={pu} onDoubleClick={()=>{if(['line','area','volume'].indexOf(tool)>=0)finishDraft();}}/>
-      <span className={'plan-scalechip'+(ppf?'':' warn')}><Icon n="crosshair" s={13}/>{ppf?<>Scale <b>{round(ppf,1)} px/ft</b></>:'Scale not set'}</span>
-      {plan.hasImg&&<div className="plan-zoom"><button onClick={()=>{const v=viewRef.current,wr=wrapRef.current;v.ox=wr.clientWidth/2-(wr.clientWidth/2-v.ox)*1.25;v.oy=wr.clientHeight/2-(wr.clientHeight/2-v.oy)*1.25;v.sc*=1.25;redrawRef.current();}}>+</button><button onClick={()=>{const v=viewRef.current,wr=wrapRef.current;v.ox=wr.clientWidth/2-(wr.clientWidth/2-v.ox)*0.8;v.oy=wr.clientHeight/2-(wr.clientHeight/2-v.oy)*0.8;v.sc*=0.8;redrawRef.current();}}>−</button></div>}
-      {!plan.hasImg&&<div className={'plan-drop'+(dragOver?' drag':'')}><Icon n="upload" s={30}/><div style={{fontFamily:'var(--hd)',fontWeight:600,fontSize:17,textTransform:'uppercase',color:'var(--ink)'}}>{busy?'Loading…':'Drop a plan or PDF'}</div><div style={{fontSize:12.5}}>PNG · JPG · PDF — then set the scale and measure</div><label className="b pri" style={{cursor:'pointer',marginTop:4}}><Icon n="upload" s={16}/>Choose file<input type="file" accept="image/*,application/pdf" style={{display:'none'}} onChange={e=>onFile(e.target.files[0])}/></label></div>}
-      {scaleAsk&&<div className="plan-actionbar"><span style={{fontSize:12,color:'var(--mut)'}}>Real length of that line?</span><input className="f-val" autoFocus style={{width:70,fontFamily:'var(--mo)',fontSize:16,borderBottom:'1px solid var(--accent)'}} type="number" value={scaleFt} onChange={e=>setScaleFt(e.target.value)} onKeyDown={e=>e.key==='Enter'&&commitScale()}/><span style={{fontFamily:'var(--mo)',fontSize:12,color:'var(--mut)'}}>ft</span><button className="b pri" style={{minHeight:38}} onClick={commitScale}>Set scale</button><button className="b sec" style={{minHeight:38}} onClick={()=>{setScaleAsk(null);setScaleFt('');}}>Cancel</button></div>}
-      {live&&!scaleAsk&&<div className="plan-actionbar"><span className="live">{live.q}<small> {live.u}</small></span><button className="b icon sec" title="Undo point" style={{minHeight:38}} onClick={()=>{draftRef.current.pop();redrawRef.current();bump();}}><Icon n="undo" s={15}/></button>{tool!=='count'&&<button className="b pri" style={{minHeight:38}} onClick={finishDraft}><Icon n="check" s={15}/>Finish</button>}{tool==='count'&&<button className="b pri" style={{minHeight:38}} onClick={finishDraft}><Icon n="check" s={15}/>Save {draftRef.current.length}</button>}<button className="b sec" style={{minHeight:38}} onClick={()=>{draftRef.current=[];hoverRef.current=null;redrawRef.current();bump();}}>Cancel</button></div>}
-    </div>
-    <div style={{display:'flex',alignItems:'center',marginTop:16,gap:10}}><p className="kick" style={{margin:0}}>Measurements</p><span className="vp clear" style={{fontSize:10}}>{mlist.length}</span><span style={{flex:1}}/>{mlist.some(m=>!m.added)&&<button className="b ok" style={{minHeight:38}} onClick={()=>{const items=mlist.filter(m=>!m.added).map(m=>({category:m.category,desc:m.label,qty:round(measQty(m,W,H,ppf),m.unit==='CY'?2:m.unit==='LF'?1:0),unit:m.unit})).filter(it=>it.qty>0); if(!items.length){toast('Set scale first');return;} onTakeoff(items); const mm={...measures}; mlist.forEach(m=>{if(!m.added&&measQty(m,W,H,ppf)>0)mm[m.id]={...mm[m.id],added:true};}); setMeasures(mm);}}><Icon n="check" s={15}/>Add all</button>}</div>
-    {mlist.length===0? <div className="empty" style={{marginTop:8}}>No measurements yet. Load a plan, set the scale, and start measuring.</div> :
-    <div className="plan-mlist">{mlist.map(m=>{const q=measQty(m,W,H,ppf);return <div key={m.id} className={'plan-mrow'+(m.hidden?' off':'')}>
+    <div style={{display:'flex',alignItems:'center',marginTop:16,gap:10,flexWrap:'wrap'}}><p className="kick" style={{margin:0}}>Measurements</p><span className="vp clear" style={{fontSize:10}}>{mlist.length}</span>
+      {nPages>1&&<div className="seg mono seg-inline" style={{marginLeft:4}}><button className={allSheets?'':'on'} onClick={()=>setAllSheets(false)}>This sheet</button><button className={allSheets?'on':''} onClick={()=>setAllSheets(true)}>All sheets</button></div>}
+      <span style={{flex:1}}/>{mlist.some(m=>!m.added)&&<button className="b ok" style={{minHeight:38}} onClick={addAll}><Icon n="check" s={15}/>Add all</button>}</div>
+    {mlist.length===0? <div className="empty" style={{marginTop:8}}>{nPages?(allSheets||nPages<2?'No measurements yet. Set the scale, then start measuring.':'Nothing measured on this sheet yet.'):'No measurements yet. Load a plan, set the scale, and start measuring.'}</div> :
+    <div className="plan-mlist">{mlist.map(m=>{const q=qtyOf(m);const mp=pageOf(m);return <div key={m.id} className={'plan-mrow'+(m.hidden?' off':'')}>
       <span style={{color:({count:'var(--accent)',line:'#22d3ee',area:'var(--ok-ink)',volume:'var(--warn)'})[m.type]}}><Icon n={({count:'pin',line:'polyline',area:'poly',volume:'box'})[m.type]} s={15}/></span>
       <select className="msel" value={m.category} onChange={e=>setMeasures({...measures,[m.id]:{...m,category:e.target.value,added:false}})}>{scope.cats.map(c=><option key={c}>{c}</option>)}</select>
       <input className="mlbl" value={m.label} onChange={e=>setMeasures({...measures,[m.id]:{...m,label:e.target.value}})}/>
-      <span className="mq">{num(q,m.unit==='CY'?2:m.unit==='LF'?1:0)} {m.unit}{m.type==='volume'?<small style={{color:'var(--dim)'}}> @{m.depthIn}"</small>:''}</span>
+      <label className="mmul" title="Multiplier — measure one typical item, then say how many"><span>×</span>
+        <input type="number" min="0" step="any" value={m.mult===undefined?1:m.mult} onChange={e=>setMeasures({...measures,[m.id]:{...m,mult:e.target.value,added:false}})}/></label>
+      <span className="mq">{nPages>1&&<button className="msheet" title="Go to that sheet" onClick={()=>goPage(mp)}>{(pages[mp]||{}).label||('P'+(mp+1))}</button>}{num(q,m.unit==='CY'?2:m.unit==='LF'?1:0)} {m.unit}{m.type==='volume'?<small style={{color:'var(--dim)'}}> @{m.depthIn}"</small>:''}</span>
       {m.added? <span className="vp good" style={{fontSize:9,justifySelf:'end'}}>ADDED</span> : <button className="b ok madd" style={{justifySelf:'end'}} onClick={()=>addM(m)}><Icon n="check" s={13}/>Add</button>}
       <button className="tk-x" title="delete" onClick={()=>{const mm={...measures};delete mm[m.id];setMeasures(mm);}}>×</button>
     </div>;})}</div>}
+  </div>;
+}
+function KeySheet({onClose}){
+  return <div className="ov" onClick={onClose}>
+    <div className="dialog" style={{maxWidth:640}} onClick={e=>e.stopPropagation()}>
+      <div className="dk">Plan takeoff</div><h3>Keyboard shortcuts</h3>
+      <div className="keys">{KEYS.map(([g,rows])=><React.Fragment key={g}>
+        <div className="kg">{g}</div>
+        {rows.map(([lb,ks],i)=><div className="kr" key={g+i}>{lb}<span className="kk">{ks.map((k,j)=><kbd key={j}>{k}</kbd>)}</span></div>)}
+      </React.Fragment>)}</div>
+      <div className="note" style={{marginTop:16}}>Your browser owns <kbd>Ctrl/⌘</kbd>+<kbd>+</kbd>/<kbd>−</kbd>/<kbd>0</kbd> and won't always hand them over — the bare keys above always work.</div>
+      <div className="dact"><button className="b pri" onClick={onClose}>Got it</button></div>
+    </div>
   </div>;
 }
 
@@ -1279,6 +1688,8 @@ function Takeoff({project,setItems,toast,rates,saveRates}){
       <button className="b pri" onClick={exportPDF}><Icon n="printer" s={16}/>PDF</button>
     </div>
     {rookie&&<div className="note" style={{marginBottom:14}}><b>Estimate:</b> categories come from the <b>{scope.name}</b> scope. Each calculator's “Add to takeoff” drops a line here, auto-priced from the <b>rate book</b> (edit inline or via Rates). Subtotals are your category budgets; the grand total is the project budget.</div>}
+    <div className="tk-layout">
+    <div>
     <Frame className="tk">
       <div className="tk-hd"><span>Description</span><span>Qty</span><span>Unit</span><span>Unit $</span><span>Total $</span><span/></div>
       {cats.map(c=><div key={c}>
@@ -1296,6 +1707,28 @@ function Takeoff({project,setItems,toast,rates,saveRates}){
     </Frame>
     <div className="totbar"><div><div className="tk-lbl">Project budget</div><div className="tk-g">${num(grand,0)}</div></div>
       <span style={{flex:1}}/><button className="b pri mid" onClick={exportPDF}><Icon n="download" s={16}/>Export sheet</button></div>
+    </div>
+    <div className="tk-rail">
+      <div className="tk-sum">
+        <div className="tk-lbl">Project budget</div>
+        <div className="sg">${num(grand,0)}</div>
+        <div className="sn">{items.length} LINE{items.length===1?'':'S'} · {Object.keys(grouped).length} CATEGOR{Object.keys(grouped).length===1?'Y':'IES'}</div>
+        <hr/>
+        <div className="tk-lbl" style={{marginBottom:11}}>By category</div>
+        {cats.filter(c=>grouped[c]&&grouped[c].length).map(c=>{const s=subtotal(c);return <div className="tk-sb" key={c}>
+          <div className="sr"><span className="cn2">{c}</span><span className="cv">${num(s,0)}</span></div>
+          <div className="bar"><i style={{width:(grand>0?Math.max(1,Math.round(s/grand*100)):0)+'%'}}/></div>
+        </div>;})}
+        {!items.length&&<div style={{fontSize:12.5,color:'var(--mut)'}}>Nothing priced yet. Measure off a plan or run a calculator, then add to the estimate.</div>}
+        <hr/>
+        <div className="acts">
+          <button className="b sec" onClick={()=>setShowRates(true)}><Icon n="tag" s={16}/>Rate book</button>
+          <button className="b sec" onClick={exportXLSX}><Icon n="file" s={16}/>Export XLSX</button>
+          <button className="b pri" onClick={exportPDF}><Icon n="printer" s={16}/>Export PDF</button>
+        </div>
+      </div>
+    </div>
+    </div>
     {showRates&&<RateBook rates={rates} save={saveRates} onClose={()=>setShowRates(false)} toast={toast}/>}
   </div>;
 }
@@ -1420,13 +1853,24 @@ function App(){
   const projects=Object.keys(data).map(id=>({id,...data[id]}));
   const active=activeId&&data[activeId]?data[activeId]:null;
   const writeProject=useCallback((id,proj)=>{ setData(prev=>{const next={...prev,[id]:proj};saveLocal(next);return next;}); if(window.fb) window.fb.set('projects/'+id,proj).catch(()=>{}); },[]);
+  /* Two project writes in one tick (e.g. "Add" = push an estimate line + flag the measurement)
+     both built from the same render's `active`, so the second silently dropped the first.
+     patchProject derives each write from the latest value, so they compose. */
+  const dataRef=useRef(data); dataRef.current=data;
+  const patchProject=useCallback((id,fn)=>{ const cur=dataRef.current&&dataRef.current[id]; if(!cur) return;
+    const proj=fn(cur); dataRef.current={...dataRef.current,[id]:proj}; writeProject(id,proj); },[writeProject]);
   function createProject(f){ const id=uid('p'); const proj={meta:{name:f.name.trim(),jobNumber:f.jobNumber,location:f.location,scope:f.scope||'tower',createdAt:todayISO()},runs:{},takeoff:{items:{}}};
     writeProject(id,proj); setActiveId(id); localStorage.setItem('okt_active',id); setModal(false); setTab('dash'); toast('Project created & synced'); }
   function selectProject(id){ setActiveId(id); localStorage.setItem('okt_active',id); setTab('dash'); }
-  const saveRun=(type,label,inputs,outputs)=>{ if(!active) return; const id=uid('r'); const runs={...(active.runs||{}),[id]:{id,type,label,inputs,date:todayISO()}}; writeProject(activeId,{...active,runs}); toast('Run saved to '+active.meta.name); };
-  const addTakeoff=(items)=>{ if(!active) return; const m={...((active.takeoff&&active.takeoff.items)||{})}; let ts=Date.now(); items.forEach(it=>{const id=uid('t');m[id]={id,...it,rate:rateFor(rates,it.category,it.unit),ts:ts++};}); writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); toast(items.length+' item(s) added to estimate'); };
-  const setTakeoffItems=(m)=>{ if(!active) return; writeProject(activeId,{...active,takeoff:{...active.takeoff,items:m}}); };
-  const setPlan=(planObj)=>{ if(!active) return; writeProject(activeId,{...active,plan:planObj}); };
+  const saveRun=(type,label,inputs,outputs)=>{ if(!active) return; const id=uid('r');
+    patchProject(activeId,p=>({...p,runs:{...(p.runs||{}),[id]:{id,type,label,inputs,date:todayISO()}}})); toast('Run saved to '+active.meta.name); };
+  const addTakeoff=(items)=>{ if(!active) return; let ts=Date.now();
+    patchProject(activeId,p=>{ const m={...((p.takeoff&&p.takeoff.items)||{})};
+      items.forEach(it=>{const id=uid('t');m[id]={id,...it,rate:rateFor(rates,it.category,it.unit),ts:ts++};});
+      return {...p,takeoff:{...p.takeoff,items:m}}; });
+    toast(items.length+' item(s) added to estimate'); };
+  const setTakeoffItems=(m)=>{ if(!active) return; patchProject(activeId,p=>({...p,takeoff:{...p.takeoff,items:m}})); };
+  const setPlan=(planObj)=>{ if(!active) return; patchProject(activeId,p=>({...p,plan:planObj})); };
 
   const NAV=[{g:'PROJECT'},{k:'dash',n:'Dashboard',i:'grid'},{k:'plan',n:'Plan',i:'ruler'},{k:'takeoff',n:'Estimate',i:'file',badge:active&&active.takeoff&&active.takeoff.items?Object.keys(active.takeoff.items).length:0},
     {g:'CALCULATORS'},{k:'concrete',n:'Concrete',i:'box'},{k:'formwork',n:'Formwork',i:'gauge'},{k:'reshore',n:'Reshore',i:'layers'},{k:'pump',n:'Concrete Pump',i:'gauge'},{k:'rebar',n:'Rebar + Crane',i:'grid'},{k:'thermal',n:'Mass Thermal',i:'thermo'},{k:'rigging',n:'Rigging',i:'hook'}];
@@ -1465,7 +1909,7 @@ function App(){
       <div className={'nav'+(navOpen?' open':'')} onClick={()=>setNavOpen(false)}>
         {NAV.map((n,x)=>n.g?<div className="grp" key={'g'+x}>{n.g}</div>:<a key={n.k} className={tab===n.k?'act':''} onClick={()=>setTab(n.k)}><Icon n={n.i} s={18}/>{n.n}{n.badge?<span className="bdg">{n.badge}</span>:null}</a>)}
       </div>
-      <div className="main">
+      <div className={'main'+(tab==='plan'||tab==='takeoff'?' wide':'')}>
         <div className="head"><h1>{TITLES[tab][0]}</h1><div className="meta">{active.meta.name}{active.meta.jobNumber?' · JOB '+active.meta.jobNumber:''}{TITLES[tab][1]?' · '+TITLES[tab][1]:''} — {TITLES[tab][2]}</div></div>
         {tab==='dash'&&<Dashboard project={active} go={setTab} theme={theme}/>}
         {tab==='plan'&&<PlanTakeoff project={active} pid={activeId} setPlan={setPlan} onTakeoff={addTakeoff} toast={toast}/>}
